@@ -5,31 +5,339 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Valentine — Fixed, Playful & Robust</title>
 <style>
-  :root{ --accent:#ff4d6d; --bg1:#ffebeF; --bg2:#ffe6eb; --muted:#6e6e6e; }
+  :root{ 
+    --accent:#ff4d6d; 
+    --accent-light:#ff8fa3;
+    --accent-dark:#e63b5c;
+    --success:#06d6a0;
+    --bg1:#fff1f5; 
+    --bg2:#ffe6eb; 
+    --muted:#6e6e6e;
+    --text:#1a1a1a;
+    --text-light:#4a4a4a;
+    --border:#f0f0f0;
+  }
   *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;}
-  body{display:grid;place-items:center;padding:18px; background:linear-gradient(180deg,#fff1f5,#ffeef2); overflow:hidden;}
-  .card{width:100%;max-width:420px;background:#fff;border-radius:14px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,0.12);text-align:center;position:relative}
-  h1{color:var(--accent);margin:6px 0 8px;font-size:20px}
-  .sub{font-size:13px;color:var(--muted);margin:0 0 12px}
-  .row{display:flex;gap:10px;justify-content:center;align-items:center}
-  button{padding:10px 14px;border-radius:12px;border:0;cursor:pointer;font-weight:700}
-  .yes{background:var(--accent);color:#fff}
-  .no{background:#f4f4f4;color:#111;position:relative}
-  .control{background:#fff;border:1px solid #eee;padding:8px 10px;border-radius:999px}
-  input[type="range"]{width:100%}
-  .tiny{font-size:12px;color:var(--muted);margin-top:8px}
-  canvas#confetti{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:995}
-  .heart{position:fixed;pointer-events:none;font-size:22px;z-index:996;animation:floatUp 4s linear}
-  @keyframes floatUp { from { transform:translateY(100vh) } to { transform:translateY(-20vh); opacity:0 } }
-  /* overlays */
-  .overlay{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,0.35);z-index:999}
-  .modal{background:#fff;padding:16px;border-radius:12px;max-width:520px;width:92%;box-shadow:0 12px 32px rgba(0,0,0,0.2)}
-  .tiny-muted{font-size:12px;color:#777;margin-top:8px}
-  /* clones */
-  .clone{position:fixed;z-index:900;cursor:pointer;padding:8px 12px;border-radius:12px;border:2px dashed rgba(0,0,0,0.06);background:#fff;font-weight:800}
-  svg{transition:transform 0.15s ease-out}
-  @media (max-width:420px){ .card{padding:14px} h1{font-size:18px} }
+  html,body{height:100%;margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Roboto,"Noto Sans",sans-serif;color:var(--text);}
+  body{
+    display:grid;
+    place-items:center;
+    padding:20px;
+    background:linear-gradient(135deg,#fff1f5 0%,#ffe6eb 50%,#ffb3c1 100%);
+    overflow:hidden;
+    min-height:100vh;
+  }
+  
+  .card{
+    width:100%;
+    max-width:480px;
+    background:#fff;
+    border-radius:24px;
+    padding:40px;
+    box-shadow:0 20px 60px rgba(255,77,109,0.2);
+    text-align:center;
+    position:relative;
+    backdrop-filter:blur(10px);
+  }
+  
+  h1{
+    color:var(--accent);
+    margin:12px 0 16px;
+    font-size:28px;
+    font-weight:800;
+    letter-spacing:-0.5px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-light));
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+  }
+  
+  .sub{
+    font-size:15px;
+    color:var(--text-light);
+    margin:0 0 28px;
+    font-weight:500;
+    line-height:1.6;
+  }
+  
+  .row{
+    display:flex;
+    gap:14px;
+    justify-content:center;
+    align-items:center;
+    margin-bottom:24px;
+    flex-wrap:wrap;
+  }
+  
+  button{
+    padding:12px 20px;
+    border-radius:14px;
+    border:none;
+    cursor:pointer;
+    font-weight:700;
+    font-size:14px;
+    transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    position:relative;
+    overflow:hidden;
+  }
+  
+  button:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(0,0,0,0.12);
+  }
+  
+  button:active{
+    transform:translateY(0);
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  }
+  
+  .yes{
+    background:linear-gradient(135deg,var(--accent),var(--accent-light));
+    color:#fff;
+    padding:14px 28px;
+    font-size:16px;
+    min-width:140px;
+    flex:1;
+    box-shadow:0 8px 24px rgba(255,77,109,0.3);
+  }
+  
+  .yes:hover{
+    box-shadow:0 12px 32px rgba(255,77,109,0.4);
+  }
+  
+  .no{
+    background:#f8f8f8;
+    color:var(--text);
+    border:2px solid var(--border);
+    transition:all 0.3s ease;
+    flex:1;
+    font-size:16px;
+    padding:12px 24px;
+  }
+  
+  .no:hover{
+    background:#fff;
+    border-color:var(--accent);
+    color:var(--accent);
+  }
+  
+  .control{
+    background:#f0f0f0;
+    border:none;
+    padding:10px 14px;
+    border-radius:12px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--text-light);
+    transition:all 0.2s ease;
+    cursor:pointer;
+  }
+  
+  .control:hover{
+    background:#e8e8e8;
+  }
+  
+  .control:active{
+    background:#ddd;
+  }
+  
+  .chaos-container{
+    background:linear-gradient(135deg,rgba(255,77,109,0.05),rgba(255,77,109,0.02));
+    border-radius:16px;
+    padding:16px 20px;
+    margin:24px 0;
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  
+  .chaos-label{
+    font-size:13px;
+    font-weight:700;
+    color:var(--text);
+    min-width:50px;
+  }
+  
+  input[type="range"]{
+    width:100%;
+    height:6px;
+    -webkit-appearance:none;
+    appearance:none;
+    background:linear-gradient(to right,#ccc,var(--accent));
+    border-radius:3px;
+    outline:none;
+    flex:1;
+  }
+  
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    appearance:none;
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),var(--accent-light));
+    cursor:pointer;
+    box-shadow:0 2px 8px rgba(255,77,109,0.3);
+    transition:all 0.2s ease;
+  }
+  
+  input[type="range"]::-webkit-slider-thumb:hover{
+    transform:scale(1.2);
+    box-shadow:0 4px 12px rgba(255,77,109,0.4);
+  }
+  
+  input[type="range"]::-moz-range-thumb{
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),var(--accent-light));
+    cursor:pointer;
+    border:none;
+    box-shadow:0 2px 8px rgba(255,77,109,0.3);
+    transition:all 0.2s ease;
+  }
+  
+  .reset-btn{
+    font-size:13px;
+    padding:10px 16px;
+  }
+  
+  canvas#confetti{
+    position:fixed;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    z-index:995;
+  }
+  
+  .heart{
+    position:fixed;
+    pointer-events:none;
+    font-size:24px;
+    z-index:996;
+    animation:floatUp 4s linear;
+    filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+  }
+  
+  @keyframes floatUp { 
+    0%{transform:translateY(100vh) scale(1) rotateZ(0deg);opacity:1}
+    50%{opacity:1}
+    100%{transform:translateY(-20vh) scale(0.5) rotateZ(360deg);opacity:0}
+  }
+  
+  @keyframes bounce {
+    0%, 100% { transform:scale(1) }
+    50% { transform:scale(1.1) }
+  }
+  
+  @keyframes shimmer {
+    0%{box-shadow:0 0 0 0 rgba(255,77,109,0.4)}
+    100%{box-shadow:0 0 0 10px rgba(255,77,109,0)}
+  }
+  
+  .overlay{
+    position:fixed;
+    inset:0;
+    display:none;
+    place-items:center;
+    background:rgba(0,0,0,0.45);
+    backdrop-filter:blur(4px);
+    z-index:999;
+    animation:fadeIn 0.2s ease;
+  }
+  
+  @keyframes fadeIn {
+    from{opacity:0;backdrop-filter:blur(0)}
+    to{opacity:1;backdrop-filter:blur(4px)}
+  }
+  
+  .modal{
+    background:#fff;
+    padding:32px;
+    border-radius:20px;
+    max-width:520px;
+    width:92%;
+    box-shadow:0 20px 60px rgba(0,0,0,0.2);
+    animation:slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  
+  @keyframes slideUp {
+    from{transform:translateY(40px);opacity:0}
+    to{transform:translateY(0);opacity:1}
+  }
+  
+  .tiny-muted{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:16px;
+    font-weight:500;
+  }
+  
+  .clone{
+    position:fixed;
+    z-index:900;
+    cursor:pointer;
+    padding:10px 16px;
+    border-radius:14px;
+    border:2px solid var(--accent);
+    background:linear-gradient(135deg,#fff,#fafafa);
+    font-weight:800;
+    font-size:14px;
+    box-shadow:0 8px 20px rgba(255,77,109,0.25);
+    transition:all 0.2s ease;
+    color:var(--accent);
+    animation:pulse 2s infinite;
+  }
+  
+  .clone:hover{
+    transform:scale(1.05);
+    box-shadow:0 12px 28px rgba(255,77,109,0.35);
+  }
+  
+  @keyframes pulse {
+    0%, 100%{opacity:1}
+    50%{opacity:0.7}
+  }
+  
+  svg{
+    transition:transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+    filter:drop-shadow(0 4px 12px rgba(255,77,109,0.15));
+  }
+  
+  .keymap{
+    display:flex;
+    gap:12px;
+    justify-content:center;
+    margin-top:20px;
+    flex-wrap:wrap;
+  }
+  
+  .key{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:11px;
+    color:var(--muted);
+    font-weight:600;
+    background:rgba(0,0,0,0.03);
+    padding:6px 10px;
+    border-radius:8px;
+    border:1px solid rgba(0,0,0,0.08);
+  }
+  
+  @media (max-width:480px){ 
+    .card{
+      padding:28px 20px;
+      border-radius:20px;
+    }
+    h1{font-size:24px;}
+    .row{gap:10px}
+    button{padding:12px 16px;font-size:15px}
+    .chaos-container{flex-wrap:wrap}
+  }
 </style>
 </head>
 <body>
@@ -37,26 +345,40 @@
 
   <main class="card" role="application" aria-labelledby="q">
     <h1 id="q">Will you be my Valentine? ❤️</h1>
-    <p class="sub" id="subtitle">Click Yes if you mean it. Click No to witness mischief.</p>
+    <p class="sub">Click Yes if you mean it. Click No to witness mischief.</p>
 
-    <div class="row" style="margin-bottom:8px">
+    <div class="row" style="margin-bottom:12px">
       <button id="yesBtn" class="yes" aria-label="Yes">Yes 💘</button>
       <button id="noBtn" class="no" aria-label="No">No 🙈</button>
     </div>
 
-    <div class="row" style="margin-top:10px;align-items:center">
-      <div class="control tiny">Chaos</div>
-      <div style="flex:1"><input id="chaos" type="range" min="0" max="10" value="7" aria-label="Chaos level"></div>
-      <button id="reset" class="control tiny">Reset</button>
+    <div class="chaos-container">
+      <div class="chaos-label">Chaos</div>
+      <input id="chaos" type="range" min="0" max="10" value="7" aria-label="Chaos level">
+      <button id="reset" class="control reset-btn">Reset</button>
     </div>
 
-    <div class="tiny-muted">Keys: Y = Yes, N = No, M = Meow</div>
+    <div class="keymap">
+      <div class="key"><kbd>Y</kbd> Yes</div>
+      <div class="key"><kbd>N</kbd> No</div>
+      <div class="key"><kbd>M</kbd> Cat</div>
+    </div>
   </main>
 
   <!-- Cat modal (positioned, not full-screen overlay) -->
-  <div id="catContainer" style="position:fixed;bottom:20px;right:20px;display:none;z-index:998;pointer-events:auto">
-    <div style="background:#fff;border-radius:12px;padding:16px;box-shadow:0 12px 32px rgba(0,0,0,0.2);text-align:center;min-width:200px">
-      <svg viewBox="0 0 120 120" style="width:120px;height:120px;margin:0 auto">
+  <div id="catContainer" style="position:fixed;bottom:30px;right:30px;display:none;z-index:998;pointer-events:auto;animation:slideInRight 0.4s cubic-bezier(0.34,1.56,0.64,1);">
+    <style>
+      @keyframes slideInRight {
+        from{transform:translateX(120px);opacity:0}
+        to{transform:translateX(0);opacity:1}
+      }
+      @keyframes popIn {
+        0%{transform:scale(0.8);opacity:0}
+        100%{transform:scale(1);opacity:1}
+      }
+    </style>
+    <div style="background:linear-gradient(135deg,#fff,#fafafa);border-radius:20px;padding:24px;box-shadow:0 16px 48px rgba(255,77,109,0.25);text-align:center;min-width:220px;border:2px solid rgba(255,77,109,0.1);animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+      <svg viewBox="0 0 120 120" style="width:110px;height:110px;margin:0 auto;display:block;filter:drop-shadow(0 4px 12px rgba(255,77,109,0.2))">
         <g transform="translate(10,10)">
           <ellipse cx="50" cy="60" rx="34" ry="30" fill="#ffd6e0"/>
           <ellipse cx="30" cy="36" rx="8" ry="10" fill="#ffd6e0"/>
@@ -65,12 +387,12 @@
           <path d="M45 72 Q50 78 55 72" stroke="#cc4d6d" stroke-width="2" fill="none" stroke-linecap="round"/>
         </g>
       </svg>
-      <div style="font-weight:800;margin-top:10px;font-size:14px">I brought treats! 🐱</div>
-      <div style="height:8px"></div>
+      <div style="font-weight:800;margin-top:14px;font-size:15px;color:#1a1a1a">I brought treats! 🐱</div>
+      <div style="height:12px"></div>
       <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-        <button id="catCuddle" class="yes" style="padding:8px 12px;font-size:12px">Cuddle 💕</button>
-        <button id="catPoke" class="control" style="padding:8px 12px;font-size:12px">Poke 👉</button>
-        <button id="catClose" class="control" style="padding:8px 12px;font-size:12px">Close ✕</button>
+        <button id="catCuddle" class="yes" style="padding:10px 14px;font-size:13px;flex:1;min-width:100px">Cuddle 💕</button>
+        <button id="catPoke" class="control" style="padding:10px 14px;font-size:13px;flex:1;min-width:80px;background:linear-gradient(135deg,rgba(255,77,109,0.1),rgba(255,77,109,0.05));color:var(--accent);font-weight:700">Poke 👉</button>
+        <button id="catClose" class="control" style="padding:10px 14px;font-size:13px;flex:1;min-width:70px">Close ✕</button>
       </div>
     </div>
   </div>
@@ -96,7 +418,8 @@ function now() { return Date.now(); }
 /* ---------- Elements ---------- */
 const yesBtn = $('#yesBtn'), noBtn = $('#noBtn'), chaos = $('#chaos'), resetBtn = $('#reset');
 const catContainer = $('#catContainer'), catCuddle = $('#catCuddle'), catPoke = $('#catPoke'), catClose = $('#catClose');
-const confettiCanvas = document.getElementById('confetti'), qEl = $('#q'), subtitle = $('#subtitle');
+const confettiCanvas = document.getElementById('confetti'), qEl = $('#q');
+const subtitle = document.querySelector('.sub');
 
 /* ---------- State ---------- */
 const STATE = {
@@ -192,10 +515,14 @@ function launchHearts(rate=30){
     const el = document.createElement('div');
     el.className = 'heart';
     el.style.left = (Math.random()*92) + 'vw';
-    el.style.fontSize = (12 + Math.random()*36) + 'px';
+    el.style.fontSize = (14 + Math.random()*32) + 'px';
     el.textContent = Math.random() > 0.6 ? '💖' : '❤️';
+    el.style.setProperty('--delay', (i * 0.05) + 's');
     document.body.appendChild(el);
-    const t = setTimeout(()=> el.remove(), 4200 + Math.random()*1500);
+    const t = setTimeout(()=> {
+      el.style.opacity = '0';
+      setTimeout(() => el.remove(), 300);
+    }, 4200 + Math.random()*1500);
     TIMERS.add(t);
   }
 }
@@ -283,21 +610,41 @@ function accept() {
   hideCat();
   
   subtitle.textContent = 'YAY!! You said YES 💖';
+  subtitle.style.animation = 'none';
+  setTimeout(() => {
+    subtitle.style.animation = 'bounce 0.6s cubic-bezier(0.34,1.56,0.64,1)';
+  }, 10);
+  
   // visual + audio reward
   try { ensureAudio(); } catch(e){}
   tada();
   spawnConfetti(140);
   launchHearts(120);
+  
+  // Animate main heading
+  qEl.style.animation = 'none';
+  setTimeout(() => {
+    qEl.style.animation = 'bounce 0.8s cubic-bezier(0.34,1.56,0.64,1)';
+  }, 10);
+  
   // hide No button after a brief moment (explicit acceptance)
   setTimeout(()=> {
-    try { noBtn.style.display = 'none'; } catch(e){}
+    try { 
+      noBtn.style.opacity = '0';
+      noBtn.style.transform = 'scale(0.9)';
+      setTimeout(() => {
+        noBtn.style.display = 'none';
+      }, 300);
+    } catch(e){}
   }, 400);
+  
   // clear clones and their listeners
   document.querySelectorAll('.clone').forEach(n=> {
     const listener = cloneListeners.get(n);
     if (listener) window.removeEventListener('mousemove', listener);
     cloneListeners.delete(n);
-    n.remove();
+    n.style.opacity = '0';
+    setTimeout(() => n.remove(), 200);
   });
   clonesCount = 0; STATE.clonesActive = 0;
 }
@@ -430,10 +777,13 @@ function resetAll() {
   // hide cat
   hideCat();
   
-  // restore noBtn
+  // restore noBtn with smooth animation
   noBtn.style.display = '';
   noBtn.style.position = 'relative';
-  noBtn.style.left = ''; noBtn.style.top = ''; noBtn.style.transform = '';
+  noBtn.style.left = ''; 
+  noBtn.style.top = ''; 
+  noBtn.style.transform = '';
+  noBtn.style.opacity = '1';
   
   // reset state
   STATE.accepted = false;
@@ -442,7 +792,9 @@ function resetAll() {
   STATE.clonesActive = 0;
   clonesCount = 0;
   qEl.textContent = 'Will you be my Valentine? ❤️';
+  qEl.style.animation = 'none';
   subtitle.textContent = 'Click Yes if you mean it. Click No to witness mischief.';
+  subtitle.style.animation = 'none';
   
   // stop audio context if present (do not "close" — just suspend)
   try { if (audioCtx && audioCtx.state !== 'suspended') audioCtx.suspend().catch(()=>{}); } catch(e){}
