@@ -38,6 +38,7 @@
     text-align:center;
     position:relative;
     backdrop-filter:blur(10px);
+    z-index:10;
   }
   
   h1{
@@ -210,14 +211,14 @@
     width:100%;
     height:100%;
     pointer-events:none;
-    z-index:995;
+    z-index:5;
   }
   
   .heart{
     position:fixed;
     pointer-events:none;
     font-size:24px;
-    z-index:996;
+    z-index:6;
     animation:floatUp 4s linear;
     filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1));
   }
@@ -245,7 +246,7 @@
     place-items:center;
     background:rgba(0,0,0,0.45);
     backdrop-filter:blur(4px);
-    z-index:999;
+    z-index:40;
     animation:fadeIn 0.2s ease;
   }
   
@@ -278,7 +279,7 @@
   
   .clone{
     position:fixed;
-    z-index:900;
+    z-index:30;
     cursor:pointer;
     padding:10px 16px;
     border-radius:14px;
@@ -356,7 +357,7 @@
   </main>
 
   <!-- Cat modal (positioned, not full-screen overlay) -->
-  <div id="catContainer" style="position:fixed;bottom:30px;right:30px;display:none;z-index:998;pointer-events:auto;animation:slideInRight 0.4s cubic-bezier(0.34,1.56,0.64,1);">
+  <div id="catContainer" style="position:fixed;bottom:30px;right:30px;display:none;z-index:35;pointer-events:auto;animation:slideInRight 0.4s cubic-bezier(0.34,1.56,0.64,1);">
     <style>
       @keyframes slideInRight {
         from{transform:translateX(120px);opacity:0}
@@ -508,10 +509,16 @@ function launchHearts(rate=30){
     el.style.fontSize = (14 + Math.random()*32) + 'px';
     el.textContent = Math.random() > 0.6 ? '💖' : '❤️';
     el.style.setProperty('--delay', (i * 0.05) + 's');
-    document.body.appendChild(el);
+    // Ensure element is in DOM before accessing
+    if (document.body) document.body.appendChild(el);
     const t = setTimeout(()=> {
-      el.style.opacity = '0';
-      setTimeout(() => el.remove(), 300);
+      try {
+        el.style.opacity = '0';
+        const removeT = setTimeout(() => {
+          try { el.remove(); } catch(e){}
+        }, 300);
+        TIMERS.add(removeT);
+      } catch(e){}
     }, 4200 + Math.random()*1500);
     TIMERS.add(t);
   }
@@ -575,20 +582,33 @@ function spawnYesClone() {
 
 /* ---------- Move No button safely (keeps it visible) ---------- */
 function moveNoButtonRandomly() {
-  const pad = 12; // safety pad
+  const pad = 20; // larger safety pad
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const btnW = Math.min(140, Math.max(80, noBtn.offsetWidth || 110));
-  const btnH = Math.min(60, Math.max(36, noBtn.offsetHeight || 44));
+  const btnW = 100; // fixed estimate
+  const btnH = 44;  // fixed estimate
+  
+  // On mobile, constrain to safe area (avoid keyboard, edges)
+  const isMobile = vw < 600;
+  const safeBottom = isMobile ? 100 : 60; // extra space on mobile for keyboard
+  
+  // ensure we have room
+  if (vw < btnW + pad*2 || vh < btnH + pad*2 + safeBottom) return;
+  
   let left = Math.random() * (vw - btnW - pad*2) + pad;
-  let top = Math.random() * (vh - btnH - pad*2) + pad;
-  // clamp to viewport
+  let top = Math.random() * (vh - btnH - pad*2 - safeBottom) + pad;
+  
+  // extra safety clamp
   left = clamp(left, pad, vw - btnW - pad);
-  top  = clamp(top, pad, vh - btnH - pad);
+  top  = clamp(top, pad, vh - btnH - pad - safeBottom);
+  
   noBtn.style.position = 'fixed';
   noBtn.style.left = left + 'px';
   noBtn.style.top = top + 'px';
-  noBtn.style.transform = ''; // reset rotation if set
+  noBtn.style.transform = '';
+  noBtn.style.pointerEvents = 'auto';
+  noBtn.style.display = 'block'; // ensure it's visible
+  noBtn.style.visibility = 'visible'; // ensure it's not hidden
 }
 
 /* ---------- accept() idempotent ---------- */
@@ -634,7 +654,9 @@ function accept() {
     if (listener) window.removeEventListener('mousemove', listener);
     cloneListeners.delete(n);
     n.style.opacity = '0';
-    setTimeout(() => n.remove(), 200);
+    setTimeout(() => {
+      try { n.remove(); } catch(e){}
+    }, 200);
   });
   clonesCount = 0; STATE.clonesActive = 0;
 }
@@ -667,22 +689,10 @@ function catPokeHandler() {
 function onNoInteracted() {
   if (STATE.accepted) return;
   STATE.attempts++;
-  // move, maybe temporary text change, maybe spawn clone, maybe spinner/cat
+  // Just move the button - no pranks, no clones
   moveNoButtonRandomly();
-  const level = STATE.chaos;
-  if (level >= 2) boing();
-  if (Math.random() < 0.22 && level >= 3) {
-    // lie briefly
-    const old = noBtn.textContent;
-    noBtn.textContent = Math.random() > 0.5 ? 'Yes 😀' : 'Maybe?';
-    setTimeout(()=> { try { noBtn.textContent = old; } catch(e){} }, 700 + Math.random()*900);
-  }
-  if (Math.random() < (0.16 + level*0.03)) spawnYesClone();
-  // prevent spinner and cat from appearing simultaneously
-  const showSpinner = Math.random() < (0.06 + level*0.04);
-  const showCatPrank = !showSpinner && Math.random() < (0.05 + level*0.04);
-  if (showSpinner) showSpinnerPrank();
-  if (showCatPrank) showCat();
+  // Optional: soft sound feedback
+  if (Math.random() < 0.3) boing();
 }
 
 /* spinner prank (clean) */
@@ -783,8 +793,11 @@ function resetAll() {
   clonesCount = 0;
   qEl.textContent = 'Will you be my Valentine? ❤️';
   qEl.style.animation = 'none';
+  qEl.style.transform = '';
   subtitle.textContent = 'Click Yes if you mean it. Click No to witness mischief.';
   subtitle.style.animation = 'none';
+  subtitle.style.opacity = '1';
+  subtitle.style.transform = '';
   
   // stop audio context if present (do not "close" — just suspend)
   try { if (audioCtx && audioCtx.state !== 'suspended') audioCtx.suspend().catch(()=>{}); } catch(e){}
@@ -793,7 +806,11 @@ function resetAll() {
 /* ---------- Event wiring ---------- */
 /* No button: hover & click */
 noBtn.addEventListener('mouseover', onNoInteracted);
-noBtn.addEventListener('click', onNoInteracted);
+noBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  onNoInteracted();
+});
 
 /* Yes button: idempotent accept */
 yesBtn.addEventListener('click', () => {
