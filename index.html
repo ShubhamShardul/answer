@@ -1,65 +1,56 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Be My Valentine ❤️</title>
 <style>
   :root{
-    --pink:#ff4d6d; --bg1:#fff0f3; --bg2:#ffe6eb; --muted:#8e8e8e;
-    --card-w:360px;
+    --pink:#ff4d6d; --bg1:#fff6f8; --bg2:#ffe6eb; --muted:#7b7b7b;
+    --card-w:380px; --radius:18px;
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#111}
   body{
     display:grid;place-items:center;
     background:linear-gradient(180deg,var(--bg1),var(--bg2));
-    padding:20px;
+    padding:18px;
   }
-
-  /* container (mobile-first) */
   .card{
     width:100%;max-width:var(--card-w);
-    background:#fff;border-radius:18px;padding:22px;
-    box-shadow:0 12px 30px rgba(0,0,0,0.12);
+    background:#fff;border-radius:var(--radius);padding:20px;
+    box-shadow:0 14px 40px rgba(0,0,0,0.12);
     text-align:center;position:relative;
   }
-  h1{margin:8px 0 18px;font-size:20px;line-height:1.25;color:var(--pink)}
+  h1{margin:8px 0 12px;font-size:20px;line-height:1.25;color:var(--pink)}
   p.meta{margin:0 0 16px;color:var(--muted);font-size:13px}
-
-  .actions{display:flex;gap:12px;justify-content:center}
-  button{flex:1;padding:12px 10px;border-radius:12px;border:0;font-weight:600;font-size:15px;cursor:pointer}
-  button:focus{outline:3px solid rgba(255,77,109,0.18)}
-  .yes{background:var(--pink);color:#fff;box-shadow:0 6px 18px rgba(255,77,109,0.18)}
-  .no{background:#f2f2f2;color:var(--muted);transition:transform .22s ease,opacity .22s ease}
-  .no.subtle{opacity:.5;transform:scale(.98)}
-  .yes.grow{transform:scale(1.04)}
-
-  .row{display:flex;gap:8px;margin-top:14px;justify-content:center;align-items:center}
-  .small{font-size:13px;color:var(--muted)}
-  .pill{background:#f7f7f7;padding:6px 10px;border-radius:999px;font-size:13px;color:#444}
-
-  /* confetti */
-  .confetti {pointer-events:none;position:fixed;left:0;top:0;width:100%;height:100%;overflow:visible;z-index:9999}
-  .confetti__piece{position:absolute;width:10px;height:14px;opacity:0.95;transform-origin:center;will-change:transform,opacity}
-
-  /* story mode (9:16) */
-  .story {aspect-ratio:9/16;max-width:420px;padding:28px;border-radius:20px}
-
-  /* reduced motion */
+  .actions{display:flex;gap:12px;justify-content:center;align-items:center}
+  button{flex:1;padding:12px 10px;border-radius:12px;border:0;font-weight:700;font-size:15px;cursor:pointer}
+  button:focus{outline:3px solid rgba(255,77,109,0.14)}
+  .yes{background:var(--pink);color:#fff;box-shadow:0 8px 24px rgba(255,77,109,0.18)}
+  .no{background:#f3f3f3;color:var(--muted);transition:transform .22s ease,opacity .22s ease}
+  .no.deem{opacity:.5;transform:scale(.98)}
+  .yes.pulse{transform:scale(1.04)}
+  .row{display:flex;gap:8px;margin-top:12px;justify-content:center;align-items:center;flex-wrap:wrap}
+  .pill{background:#fafafa;padding:7px 12px;border-radius:999px;font-size:13px;color:#444;border:1px solid #f0f0f0}
+  .iconBtn{background:transparent;border:0;padding:6px 10px;border-radius:10px;cursor:pointer}
+  .confettiCanvas{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:9999}
+  .story {aspect-ratio:9/16;max-width:420px;padding:22px;border-radius:20px}
   @media (prefers-reduced-motion: reduce){
-    .yes.grow, .no {transition:none}
-    .confetti__piece {display:none}
+    .yes.pulse, .no {transition:none}
   }
-
-  /* responsive text */
   @media (max-width:420px){h1{font-size:18px}}
+  /* Small footer text */
+  .footer{margin-top:14px;font-size:12px;color:var(--muted)}
+  .controls{display:flex;gap:8px;justify-content:center;align-items:center;margin-top:12px}
 </style>
 </head>
 <body>
-  <div class="card" id="card" role="application" aria-labelledby="q" >
+  <canvas id="confetti" class="confettiCanvas" aria-hidden="true"></canvas>
+
+  <main class="card" id="card" role="application" aria-labelledby="q">
     <h1 id="q">Will you be my Valentine? ❤️</h1>
-    <p class="meta" id="subtitle">A tiny question with big feelings — you can say yes or say no (I’ll keep asking kindly).</p>
+    <p class="meta" id="subtitle">A tiny question with big feelings — you can say yes or no (I'll ask kindly).</p>
 
     <div class="actions" role="group" aria-label="Valentine choices">
       <button id="yesBtn" class="yes" aria-describedby="attempts">Yes 💘</button>
@@ -68,30 +59,22 @@
 
     <div class="row" style="margin-top:12px">
       <div class="pill" id="attempts">Attempts: 0</div>
-      <div style="width:8px"></div>
-      <button id="shareBtn" class="pill" style="border-radius:999px;background:transparent;border:1px solid #eee;cursor:pointer">Share</button>
-      <button id="toggleStory" class="pill" title="Toggle story/mobile ratio">Story</button>
+      <button id="shareBtn" class="pill iconBtn" title="Share">Share</button>
+      <button id="resetBtn" class="pill iconBtn" title="Reset">Reset</button>
+      <button id="toggleStory" class="pill iconBtn" title="Toggle story">Story</button>
     </div>
 
-    <!-- live region for screen readers -->
-    <div aria-live="polite" aria-atomic="true" id="live" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"> </div>
-  </div>
+    <div class="controls" aria-hidden="true" style="margin-top:10px">
+      <div class="footer">Tip: personalize the link with <code>?name=YourName</code></div>
+    </div>
 
-  <!-- confetti container -->
-  <div class="confetti" id="confetti" aria-hidden="true"></div>
+    <!-- Live region for screen readers -->
+    <div aria-live="polite" aria-atomic="true" id="live" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"></div>
+  </main>
 
 <script>
-/*  Senior-grade behavior:
-    - deterministic state escalation
-    - personalization via ?name=
-    - localStorage persistence
-    - accessible announcements
-    - confetti + sound (gesture-triggered)
-    - share link + webshare fallback
-    - analytics stub (non-blocking)
-*/
-
 (() => {
+  // ---------- Config & copy ----------
   const STATES = [
     "Will you be my Valentine? ❤️",
     "Are you sure? I’d really love it 🥺",
@@ -99,202 +82,215 @@
     "Chocolates + your favorite movie? 🍫🎬",
     "One last sweet ask… please? 😭❤️"
   ];
-
-  const A11Y_ANNOUNCES = [
+  const ANNOUNCES = [
     "Initial ask shown",
-    "Second ask: gentle follow-up",
-    "Third ask: promise special plans",
-    "Fourth ask: offer chocolates and movie",
-    "Final ask: last gentle ask"
+    "Gentle follow-up",
+    "Promise: special plans",
+    "Offer: chocolates and movie",
+    "Final gentle ask"
   ];
+  const LOCAL_KEY = "valentine_v2";
 
-  const LOCAL_KEY = "valentine_state_v1";
-  const analyticsEndpoint = "/analytics/valentine"; // stub - non-blocking
+  // ---------- Elements ----------
+  const qEl = document.getElementById('q');
+  const yesBtn = document.getElementById('yesBtn');
+  const noBtn = document.getElementById('noBtn');
+  const attemptsEl = document.getElementById('attempts');
+  const live = document.getElementById('live');
+  const shareBtn = document.getElementById('shareBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const toggleStory = document.getElementById('toggleStory');
+  const card = document.getElementById('card');
+  const confettiCanvas = document.getElementById('confetti');
+  const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // DOM
-  const q = document.getElementById("q");
-  const yesBtn = document.getElementById("yesBtn");
-  const noBtn = document.getElementById("noBtn");
-  const attemptsEl = document.getElementById("attempts");
-  const live = document.getElementById("live");
-  const confettiRoot = document.getElementById("confetti");
-  const shareBtn = document.getElementById("shareBtn");
-  const toggleStory = document.getElementById("toggleStory");
-  const card = document.getElementById("card");
+  // ---------- State ----------
+  let state = 0, attempts = 0, accepted = false, storyMode = false;
+  // Personalization
+  const params = new URLSearchParams(location.search);
+  const person = (params.get('name') || '').trim();
+  if(person) STATES[0] = `Hey ${person} — will you be my Valentine? ❤️`;
 
-  // state
-  let state = 0;
-  let attempts = 0;
-  let accepted = false;
-  let storyMode = false;
-
-  // personalization from ?name= param
-  function getParam(name){
-    try {
-      const p = new URLSearchParams(location.search);
-      return p.get(name);
-    } catch(e){return null}
-  }
-  const person = decodeURIComponent(getParam('name') || '').trim();
-  if(person) {
-    STATES[0] = `Hey ${person} — will you be my Valentine? ❤️`;
-  }
-
-  // load persisted
+  // Load persisted
   try {
-    const saved = JSON.parse(localStorage.getItem(LOCAL_KEY) || '{}');
-    if(saved && typeof saved.state === 'number') { state = saved.state; attempts = saved.attempts || 0; accepted = !!saved.accepted; }
-  } catch(e){/*ignore*/}
+    const s = JSON.parse(localStorage.getItem(LOCAL_KEY) || '{}');
+    if(s && typeof s.state === 'number'){ state = s.state; attempts = s.attempts || 0; accepted = !!s.accepted; }
+  } catch(e){ /* ignore */ }
 
-  // render
+  // ---------- Utilities ----------
+  function persist(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify({state,attempts,accepted})); }catch(e){} }
+  function announce(i){ const msg = ANNOUNCES[Math.min(i,ANNOUNCES.length-1)] || qEl.textContent; live.textContent = msg; }
+  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+  // ---------- Render ----------
   function render(){
-    q.textContent = STATES[Math.min(state, STATES.length-1)];
+    qEl.textContent = STATES[clamp(state,0,STATES.length-1)];
     attemptsEl.textContent = `Attempts: ${attempts}`;
-    // visual emphasis rules
     if(accepted){
-      yesBtn.classList.add('grow');
-      noBtn.style.display='none';
-      shareBtn.textContent = "Share the joy";
+      yesBtn.classList.add('pulse'); noBtn.style.display = 'none';
+      shareBtn.textContent = 'Share the joy';
+      resetBtn.textContent = 'Reset';
     } else {
-      yesBtn.classList.remove('grow');
-      noBtn.style.display='inline-flex';
-      // de-emphasize No progressively
-      if(state >= 2) noBtn.classList.add('subtle'); else noBtn.classList.remove('subtle');
+      yesBtn.classList.remove('pulse'); noBtn.style.display = 'inline-flex';
+      if(state >= 2) noBtn.classList.add('deem'); else noBtn.classList.remove('deem');
+      shareBtn.textContent = 'Share';
     }
   }
 
-  // persist non-blocking
-  function persist(){
-    try {
-      localStorage.setItem(LOCAL_KEY, JSON.stringify({state, attempts, accepted}));
-    } catch(e){}
-  }
-
-  // announce for SR
-  function announce(i){
-    const msg = A11Y_ANNOUNCES[Math.min(i, A11Y_ANNOUNCES.length-1)] || q.textContent;
-    live.textContent = msg;
-  }
-
-  // confetti (simple)
-  function fireConfetti(count = 40){
-    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  // ---------- Confetti (canvas) ----------
+  const ctx = confettiCanvas.getContext ? confettiCanvas.getContext('2d') : null;
+  let confettiPieces = [];
+  function resizeCanvas(){ confettiCanvas.width = window.innerWidth; confettiCanvas.height = window.innerHeight; }
+  function spawnConfetti(count=40){
+    if(prefersReduced || !ctx) return;
+    confettiPieces = [];
     const colors = ['#ff4d6d','#ffd166','#06d6a0','#118ab2','#bd7efc'];
-    const w = window.innerWidth, h = window.innerHeight;
     for(let i=0;i<count;i++){
-      const el = document.createElement('div');
-      el.className = 'confetti__piece';
-      el.style.left = Math.random() * w + 'px';
-      el.style.top = '-20px';
-      el.style.background = colors[i % colors.length];
-      el.style.transform = `rotate(${Math.random()*360}deg)`;
-      el.style.width = (8 + Math.random()*8) + 'px';
-      el.style.height = (10 + Math.random()*8) + 'px';
-      el.style.opacity = 0.95;
-      // animation via JS + requestAnimationFrame for lightness
-      confettiRoot.appendChild(el);
-      // drop & spin
-      const dur = 2400 + Math.random()*2000;
-      const start = performance.now();
-      (function animate(now){
-        const t = Math.min(1, (now - start) / dur);
-        el.style.top = (-20 + t * (h + 40)) + 'px';
-        el.style.transform = `translateY(${t*20}px) rotate(${t*720}deg)`;
-        el.style.opacity = 1 - t;
-        if(t < 1) requestAnimationFrame(animate); else el.remove();
-      })(performance.now());
+      confettiPieces.push({
+        x: Math.random()*confettiCanvas.width,
+        y: -10 - Math.random()*300,
+        w: 6 + Math.random()*10,
+        h: 8 + Math.random()*10,
+        vx: -1 + Math.random()*2,
+        vy: 2 + Math.random()*5,
+        rot: Math.random()*360,
+        vr: (-3 + Math.random()*6),
+        color: colors[i % colors.length],
+        life: 0
+      });
     }
+    confettiCanvas.style.display = 'block';
+    requestAnimationFrame(tickConfetti);
+    setTimeout(()=>{ confettiPieces = []; }, 3200);
   }
+  function tickConfetti(){
+    if(!ctx) return;
+    ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+    for(let p of confettiPieces){
+      p.x += p.vx; p.y += p.vy; p.vy += 0.06; p.rot += p.vr; p.life += 1;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI/180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      ctx.restore();
+    }
+    // continue while pieces exist
+    if(confettiPieces.length) requestAnimationFrame(tickConfetti);
+    else { ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height); confettiCanvas.style.display='none'; }
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
 
-  // sound (gesture required)
-  let yesAudio = null;
-  function initAudio(){
+  // ---------- Sound: simple chime via WebAudio ----------
+  let audioCtx = null;
+  function playChime(){
     try {
-      yesAudio = new Audio();
-      // embed a short beep encoded as dataURI (tiny, non-copyright)
-      yesAudio.src = "data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAA"; // placeholder silent; replace with valid dataURI if desired
-      yesAudio.preload = 'auto';
+      if(!window.AudioContext) return;
+      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      // two-tone chime
+      const now = audioCtx.currentTime;
+      const o1 = audioCtx.createOscillator();
+      const o2 = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o1.type = 'sine'; o2.type = 'sine';
+      o1.frequency.setValueAtTime(880, now); // A5
+      o2.frequency.setValueAtTime(660, now); // E5
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(0.12, now + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+      o1.connect(g); o2.connect(g); g.connect(audioCtx.destination);
+      o1.start(now); o2.start(now + 0.02);
+      o1.stop(now + 1.05); o2.stop(now + 1.05);
     } catch(e){}
   }
 
-  // analytics (non-blocking)
-  function sendAnalytics(e){
-    try {
-      navigator.sendBeacon && navigator.sendBeacon(analyticsEndpoint, JSON.stringify(e)) ||
-      fetch(analyticsEndpoint, {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(e)}).catch(()=>{});
-    } catch(e){}
-  }
-
-  // event handlers
-  noBtn.addEventListener('click', (ev) => {
+  // ---------- Events ----------
+  noBtn.addEventListener('click', () => {
     if(accepted) return;
     attempts++;
-    // deterministic escalation
-    state = Math.min(state + 1, STATES.length - 1);
+    state = clamp(state + 1, 0, STATES.length - 1);
     render();
     announce(state);
     persist();
-    sendAnalytics({action:'no_clicked',state,attempts,timestamp:Date.now()});
+    // lightweight micro-bump on No
+    noBtn.animate([{transform:'translateY(0)'},{transform:'translateY(-6px)'},{transform:'translateY(0)'}],{duration:220, easing:'ease-out'});
+    // analytics stub (non-blocking)
+    navigator.sendBeacon && navigator.sendBeacon('/analytics/valentine', JSON.stringify({action:'no',state,attempts,time:Date.now()}));
   });
 
-  yesBtn.addEventListener('click', (ev) => {
+  yesBtn.addEventListener('click', () => {
     if(accepted) return;
     accepted = true;
     attempts++;
     render();
     announce('Accepted — celebration!');
     persist();
-    // small animations & confetti + sound
-    fireConfetti(50);
-    try { yesAudio && yesAudio.play().catch(()=>{}); } catch(e){}
-    sendAnalytics({action:'yes_clicked',state,attempts,timestamp:Date.now()});
+    // show confetti and chime (gesture allowed)
+    spawnConfetti(60);
+    playChime();
+    // gentle celebration animation
+    yesBtn.animate([{transform:'scale(1)'},{transform:'scale(1.08)'},{transform:'scale(1)'}],{duration:600,easing:'cubic-bezier(.2,.8,.2,1)'});
+    // analytics stub
+    navigator.sendBeacon && navigator.sendBeacon('/analytics/valentine', JSON.stringify({action:'yes',state,attempts,time:Date.now()}));
   });
 
-  // keyboard accessibility
-  document.addEventListener('keyup', (ev) => {
-    if(ev.key === 'Enter'){
-      // prefer currently focused or default to Yes
+  // Keyboard: Enter triggers current focus or yes, Escape triggers no
+  document.addEventListener('keyup', (e) => {
+    if(e.key === 'Enter'){
       const active = document.activeElement;
-      if(active === noBtn) noBtn.click();
-      else yesBtn.click();
-    }
-    if(ev.key === 'Escape'){
-      // quick toggle no
+      if(active === noBtn) noBtn.click(); else yesBtn.click();
+    } else if(e.key === 'Escape'){
       noBtn.click();
     }
   });
 
-  // share behavior
+  // Share
   shareBtn.addEventListener('click', async () => {
-    const shareText = person ? `${person}, you made my day — you said yes! 💖` : `I just asked someone to be my Valentine — try it: ${location.href}`;
+    const url = location.href;
+    const shareText = person ? `${person}, you made my day — will you be my Valentine?` : `I asked someone to be my Valentine — try: ${url}`;
     if(navigator.share){
-      try { await navigator.share({title:'Valentine',text:shareText,url:location.href}); sendAnalytics({action:'shared_webshare'}); return; } catch(e){}
+      try { await navigator.share({title:'Valentine',text:shareText,url}); return; } catch(e){}
     }
-    // fallback: copy
+    // fallback copy
     try {
-      await navigator.clipboard.writeText(location.href);
+      await navigator.clipboard.writeText(url);
       alert('Link copied to clipboard — share the love 💌');
-      sendAnalytics({action:'shared_copy'});
     } catch(e){
-      prompt('Copy this link to share:', location.href);
-      sendAnalytics({action:'shared_prompt'});
+      prompt('Copy this link to share:', url);
     }
   });
 
-  // story / ratio toggle
+  // Reset
+  resetBtn.addEventListener('click', () => {
+    if(!confirm('Reset state and attempts?')) return;
+    state = 0; attempts = 0; accepted = false;
+    persist(); render(); announce(0);
+  });
+
+  // Story toggle
   toggleStory.addEventListener('click', () => {
     storyMode = !storyMode;
     if(storyMode) card.classList.add('story'); else card.classList.remove('story');
     toggleStory.textContent = storyMode ? 'Exit story' : 'Story';
   });
 
-  // initial UI
-  initAudio();
+  // initial render & announce
   render();
   announce(state);
 
-  // expose debug for tests
-  window.__valentine = {getState:()=>({state,attempts,accepted}),reset:()=>{state=0;attempts=0;accepted=false;persist();render();announce(0)}};
+  // Expose debug/reset API
+  window.__valentine = {
+    state: () => ({state, attempts, accepted}),
+    reset: () => { state=0; attempts=0; accepted=false; persist(); render(); announce(0); }
+  };
+
+  // Accessibility: ensure focus order and that buttons are reachable
+  yesBtn.setAttribute('aria-label','Yes — accept');
+  noBtn.setAttribute('aria-label','No — decline');
+
+  // Persist periodically just in case
+  setInterval(persist, 2000);
 
 })();
 </script>
