@@ -68,7 +68,7 @@
       <div style="height:12px"></div>
       <div style="display:flex;gap:10px;justify-content:center">
         <button id="catCuddle" class="yes">Cuddle</button>
-        <button id="catPoke" class="control" id="catPokeBtn">Poke</button>
+        <button id="catPoke" class="control">Poke</button>
       </div>
     </div>
   </div>
@@ -200,6 +200,7 @@ function launchHearts(rate=30){
 
 /* ---------- spawnYesClone (chasing clone) ---------- */
 let clonesCount = 0;
+const cloneListeners = new Map(); // track listeners per clone
 function spawnYesClone() {
   if (STATE.accepted) return;
   if (clonesCount >= CONFIG.MAX_CLONES) return; // limit clones
@@ -226,11 +227,14 @@ function spawnYesClone() {
     c.style.top = (r.top + dy*0.12) + 'px';
   }
   window.addEventListener('mousemove', chase);
+  cloneListeners.set(c, chase);
 
   // clicking clone triggers accept() once and removes clone
   c.addEventListener('click', () => {
     c.remove();
-    window.removeEventListener('mousemove', chase);
+    const listener = cloneListeners.get(c);
+    if (listener) window.removeEventListener('mousemove', listener);
+    cloneListeners.delete(c);
     clonesCount = Math.max(0, clonesCount-1);
     STATE.clonesActive = clonesCount;
     accept();
@@ -238,8 +242,12 @@ function spawnYesClone() {
 
   // auto-remove after TTL
   const ttl = setTimeout(()=> {
-    try { c.remove(); } catch(e){}
-    window.removeEventListener('mousemove', chase);
+    try { 
+      c.remove();
+      const listener = cloneListeners.get(c);
+      if (listener) window.removeEventListener('mousemove', listener);
+      cloneListeners.delete(c);
+    } catch(e){}
     clonesCount = Math.max(0, clonesCount-1);
     STATE.clonesActive = clonesCount;
   }, CONFIG.CLONE_TTL_MS);
@@ -249,15 +257,15 @@ function spawnYesClone() {
 /* ---------- Move No button safely (keeps it visible) ---------- */
 function moveNoButtonRandomly() {
   const pad = 12; // safety pad
-  const vw = Math.max(320, window.innerWidth);
-  const vh = Math.max(240, window.innerHeight);
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
   const btnW = Math.min(140, Math.max(80, noBtn.offsetWidth || 110));
   const btnH = Math.min(60, Math.max(36, noBtn.offsetHeight || 44));
   let left = Math.random() * (vw - btnW - pad*2) + pad;
   let top = Math.random() * (vh - btnH - pad*2) + pad;
   // clamp to viewport
-  left = clamp(left, pad, window.innerWidth - btnW - pad);
-  top  = clamp(top, pad, window.innerHeight - btnH - pad);
+  left = clamp(left, pad, vw - btnW - pad);
+  top  = clamp(top, pad, vh - btnH - pad);
   noBtn.style.position = 'fixed';
   noBtn.style.left = left + 'px';
   noBtn.style.top = top + 'px';
@@ -278,8 +286,13 @@ function accept() {
   setTimeout(()=> {
     try { noBtn.style.display = 'none'; } catch(e){}
   }, 400);
-  // clear clones
-  document.querySelectorAll('.clone').forEach(n=>n.remove());
+  // clear clones and their listeners
+  document.querySelectorAll('.clone').forEach(n=> {
+    const listener = cloneListeners.get(n);
+    if (listener) window.removeEventListener('mousemove', listener);
+    cloneListeners.delete(n);
+    n.remove();
+  });
   clonesCount = 0; STATE.clonesActive = 0;
 }
 
@@ -315,15 +328,22 @@ function onNoInteracted() {
     setTimeout(()=> { try { noBtn.textContent = old; } catch(e){} }, 700 + Math.random()*900);
   }
   if (Math.random() < (0.16 + level*0.03)) spawnYesClone();
-  if (Math.random() < (0.06 + level*0.04)) showSpinnerPrank();
-  if (Math.random() < (0.05 + level*0.04)) showCat();
+  // prevent spinner and cat from appearing simultaneously
+  const showSpinner = Math.random() < (0.06 + level*0.04);
+  const showCatPrank = !showSpinner && Math.random() < (0.05 + level*0.04);
+  if (showSpinner) showSpinnerPrank();
+  if (showCatPrank) showCat();
 }
 
 /* spinner prank (clean) */
 let spinnerTimer = null;
+let spinnerOverlay = null;
 function showSpinnerPrank() {
+  // prevent multiple spinners
+  if (spinnerOverlay) return;
+  
   clearTimeout(spinnerTimer);
-  const spinnerOverlay = document.createElement('div');
+  spinnerOverlay = document.createElement('div');
   spinnerOverlay.className = 'overlay';
   spinnerOverlay.style.display = 'grid';
   spinnerOverlay.setAttribute('aria-hidden','false');
@@ -335,9 +355,16 @@ function showSpinnerPrank() {
 
   spinnerTimer = setTimeout(()=> {
     // flip to ERROR & remove
-    try { spinnerOverlay.querySelector('.modal').innerHTML = `<div style="font-weight:900;color:#c94">ERROR: You meant YES — retrying...</div>`; } catch(e){}
-    pop();
-    setTimeout(()=> { try { spinnerOverlay.remove(); } catch(e){} }, 820);
+    if (spinnerOverlay) {
+      try { 
+        spinnerOverlay.querySelector('.modal').innerHTML = `<div style="font-weight:900;color:#c94">ERROR: You meant YES — retrying...</div>`; 
+      } catch(e){}
+      pop();
+      setTimeout(()=> { 
+        try { if (spinnerOverlay) spinnerOverlay.remove(); } catch(e){}
+        spinnerOverlay = null;
+      }, 820);
+    }
   }, 900 + Math.random()*900);
   TIMERS.add(spinnerTimer);
 }
@@ -364,18 +391,36 @@ function clearAllTimers() {
 function resetAll() {
   // clear timers
   clearAllTimers();
+  
+  // clear spinner overlay reference
+  if (spinnerOverlay) {
+    try { spinnerOverlay.remove(); } catch(e){}
+    spinnerOverlay = null;
+  }
+  
   // cancel confetti RAF
   try { if (confettiRaf) cancelAnimationFrame(confettiRaf); } catch(e){}
   confettiRaf = null; confettiPieces = []; ctx && ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
-  // remove clones/hearts
-  document.querySelectorAll('.clone').forEach(n => n.remove());
+  
+  // remove clones and clean up their listeners
+  document.querySelectorAll('.clone').forEach(n => {
+    const listener = cloneListeners.get(n);
+    if (listener) window.removeEventListener('mousemove', listener);
+    cloneListeners.delete(n);
+    n.remove();
+  });
+  
+  // remove hearts
   document.querySelectorAll('.heart').forEach(n => n.remove());
+  
   // hide cat
   hideCat();
+  
   // restore noBtn
   noBtn.style.display = '';
   noBtn.style.position = 'relative';
   noBtn.style.left = ''; noBtn.style.top = ''; noBtn.style.transform = '';
+  
   // reset state
   STATE.accepted = false;
   STATE.attempts = 0;
@@ -384,6 +429,7 @@ function resetAll() {
   clonesCount = 0;
   qEl.textContent = 'Will you be my Valentine? ❤️';
   subtitle.textContent = 'Click Yes if you mean it. Click No to witness mischief.';
+  
   // stop audio context if present (do not "close" — just suspend)
   try { if (audioCtx && audioCtx.state !== 'suspended') audioCtx.suspend().catch(()=>{}); } catch(e){}
 }
