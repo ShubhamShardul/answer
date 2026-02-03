@@ -406,7 +406,7 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 function now() { return Date.now(); }
 
 /* ---------- Elements ---------- */
-const yesBtn = $('#yesBtn'), noBtn = $('#noBtn'), chaos = $('#chaos'), resetBtn = $('#reset');
+const yesBtn = $('#yesBtn'), noBtn = $('#noBtn');
 const catContainer = $('#catContainer'), catCuddle = $('#catCuddle'), catPoke = $('#catPoke'), catClose = $('#catClose');
 const confettiCanvas = document.getElementById('confetti'), qEl = $('#q');
 const subtitle = document.querySelector('.sub');
@@ -415,7 +415,7 @@ const subtitle = document.querySelector('.sub');
 const STATE = {
   accepted: false,
   attempts: 0,
-  chaos: Number(chaos.value || 7),
+  chaos: 7,
   lastPokeAt: 0,
   clonesActive: 0
 };
@@ -812,22 +812,12 @@ $('#catClose').addEventListener('click', () => {
   hideCat();
 });
 
-/* chaos slider update */
-chaos.addEventListener('input', (e) => {
-  STATE.chaos = Number(e.target.value);
-});
-
 /* keyboard shortcuts */
 document.addEventListener('keydown', (ev) => {
   const k = ev.key.toLowerCase();
   if (k === 'y') yesBtn.click();
   if (k === 'n') noBtn.click();
   if (k === 'm') showCat();
-});
-
-/* reset */
-resetBtn.addEventListener('click', () => {
-  resetAll();
 });
 
 /* initial friendly nudge */
