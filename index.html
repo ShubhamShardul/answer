@@ -1,298 +1,560 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Be My Valentine ❤️</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>EXTREMELY UNHINGED Valentine 💘</title>
 <style>
   :root{
-    --pink:#ff4d6d; --bg1:#fff6f8; --bg2:#ffe6eb; --muted:#7b7b7b;
-    --card-w:380px; --radius:18px;
+    --bg1:#ff9aa2; --bg2:#ffd6e0; --accent:#ff4d6d; --muted:#6b6b6b;
+    --card-w:380px;
   }
   *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#111}
+  html,body{height:100%;margin:0;font-family: "Comic Sans MS", "Trebuchet MS", system-ui, Arial, sans-serif;}
   body{
-    display:grid;place-items:center;
-    background:linear-gradient(180deg,var(--bg1),var(--bg2));
-    padding:18px;
+    background: radial-gradient(circle at 10% 10%, #fff6f8, rgba(255,255,255,0)) , linear-gradient(180deg,var(--bg1),var(--bg2));
+    display:grid;place-items:center;padding:20px;overflow:hidden;
   }
+
+  /* main card */
   .card{
-    width:100%;max-width:var(--card-w);
-    background:#fff;border-radius:var(--radius);padding:20px;
-    box-shadow:0 14px 40px rgba(0,0,0,0.12);
-    text-align:center;position:relative;
+    width:100%;max-width:var(--card-w);background:#fff;border-radius:18px;padding:18px;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.18); text-align:center; position:relative; z-index:50;
   }
-  h1{margin:8px 0 12px;font-size:20px;line-height:1.25;color:var(--pink)}
-  p.meta{margin:0 0 16px;color:var(--muted);font-size:13px}
-  .actions{display:flex;gap:12px;justify-content:center;align-items:center}
-  button{flex:1;padding:12px 10px;border-radius:12px;border:0;font-weight:700;font-size:15px;cursor:pointer}
-  button:focus{outline:3px solid rgba(255,77,109,0.14)}
-  .yes{background:var(--pink);color:#fff;box-shadow:0 8px 24px rgba(255,77,109,0.18)}
-  .no{background:#f3f3f3;color:var(--muted);transition:transform .22s ease,opacity .22s ease}
-  .no.deem{opacity:.5;transform:scale(.98)}
-  .yes.pulse{transform:scale(1.04)}
-  .row{display:flex;gap:8px;margin-top:12px;justify-content:center;align-items:center;flex-wrap:wrap}
-  .pill{background:#fafafa;padding:7px 12px;border-radius:999px;font-size:13px;color:#444;border:1px solid #f0f0f0}
-  .iconBtn{background:transparent;border:0;padding:6px 10px;border-radius:10px;cursor:pointer}
-  .confettiCanvas{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:9999}
-  .story {aspect-ratio:9/16;max-width:420px;padding:22px;border-radius:20px}
-  @media (prefers-reduced-motion: reduce){
-    .yes.pulse, .no {transition:none}
+  h1{margin:6px 0 10px;color:var(--accent);font-size:20px}
+  p.sub{margin:0 0 14px;color:var(--muted);font-size:13px}
+
+  .row{display:flex;gap:10px;justify-content:center;align-items:center}
+  button{
+    padding:12px 14px;border-radius:12px;border:0;font-weight:800;cursor:pointer;font-size:15px;
   }
-  @media (max-width:420px){h1{font-size:18px}}
-  /* Small footer text */
-  .footer{margin-top:14px;font-size:12px;color:var(--muted)}
-  .controls{display:flex;gap:8px;justify-content:center;align-items:center;margin-top:12px}
+  button:focus{outline:3px solid rgba(255,77,109,0.15)}
+  .yes{background:var(--accent);color:#fff;box-shadow:0 10px 30px rgba(255,77,109,0.18)}
+  .no{background:#f0f0f0;color:#333;position:relative}
+  .control{background:#fff;border:1px solid #f0f0f0;padding:8px 10px;border-radius:999px;font-weight:700}
+
+  /* chaos meter */
+  .meter{width:100%;margin-top:12px}
+  .meter input{width:100%}
+
+  /* overlays and modals */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);display:none;place-items:center;z-index:999}
+  .modal{background:#fff;padding:18px;border-radius:12px;max-width:420px;width:90%;box-shadow:0 12px 40px rgba(0,0,0,0.3);text-align:left}
+  .center{display:flex;align-items:center;justify-content:center}
+
+  /* spinner */
+  .spinner{width:72px;height:72px;border-radius:50%;display:inline-grid;place-items:center;background:linear-gradient(135deg,#fff,#ffeef4);box-shadow:0 6px 18px rgba(0,0,0,0.08)}
+  .dot{width:12px;height:12px;background:var(--accent);border-radius:50%;animation:blink .8s infinite ease-in-out}
+  .dot:nth-child(2){animation-delay:.12s}
+  .dot:nth-child(3){animation-delay:.24s}
+  @keyframes blink{0%,100%{transform:scale(.6);opacity:.4}50%{transform:scale(1.1);opacity:1}}
+
+  /* confetti canvas */
+  canvas#confetti{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:995}
+
+  /* hearts */
+  .heart{position:fixed;font-size:22px;pointer-events:none;z-index:996;animation:floatup 4s linear;}
+  @keyframes floatup{from{transform:translateY(100vh) rotate(0);}to{transform:translateY(-20vh) rotate(360deg);opacity:0;}}
+
+  /* tiny helper */
+  .tiny{font-size:12px;color:#777;margin-top:8px}
+
+  /* terms modal (intentionally long) */
+  .termsBody{height:220px;overflow:auto;padding:8px;border-radius:8px;border:1px dashed #eee;background:#fafafa}
+  .termLine{font-size:13px;line-height:1.4;padding:6px 0}
+
+  /* cat modal */
+  .cat{font-size:18px;text-align:center}
+  .cat svg{width:160px;height:160px;display:block;margin:0 auto}
+
+  /* countdown delighter */
+  .big{font-size:34px;font-weight:900;color:var(--accent)}
+  /* responsive */
+  @media (max-width:420px){ .card{padding:16px} h1{font-size:18px} }
 </style>
 </head>
 <body>
-  <canvas id="confetti" class="confettiCanvas" aria-hidden="true"></canvas>
 
-  <main class="card" id="card" role="application" aria-labelledby="q">
+  <canvas id="confetti"></canvas>
+
+  <div class="card" role="application" aria-labelledby="q">
     <h1 id="q">Will you be my Valentine? ❤️</h1>
-    <p class="meta" id="subtitle">A tiny question with big feelings — you can say yes or no (I'll ask kindly).</p>
+    <p class="sub">Say "Yes" to end this glorious chaos — try clicking "No" if you dare.</p>
 
-    <div class="actions" role="group" aria-label="Valentine choices">
-      <button id="yesBtn" class="yes" aria-describedby="attempts">Yes 💘</button>
-      <button id="noBtn" class="no" aria-describedby="attempts">No 🙈</button>
+    <div class="row" style="margin-bottom:8px">
+      <button id="yesBtn" class="yes">Yes 💘</button>
+      <button id="noBtn" class="no">No 🙈</button>
     </div>
 
-    <div class="row" style="margin-top:12px">
-      <div class="pill" id="attempts">Attempts: 0</div>
-      <button id="shareBtn" class="pill iconBtn" title="Share">Share</button>
-      <button id="resetBtn" class="pill iconBtn" title="Reset">Reset</button>
-      <button id="toggleStory" class="pill iconBtn" title="Toggle story">Story</button>
+    <div class="row" style="margin-top:8px">
+      <div class="control tiny">Chaos</div>
+      <div class="meter">
+        <input id="chaos" type="range" min="0" max="10" value="7" />
+      </div>
+      <div style="width:8px"></div>
+      <button id="reset" class="control tiny">Reset</button>
     </div>
 
-    <div class="controls" aria-hidden="true" style="margin-top:10px">
-      <div class="footer">Tip: personalize the link with <code>?name=YourName</code></div>
-    </div>
+    <div class="tiny">Keyboard: <strong>Y</strong>=Yes, <strong>N</strong>=No, <strong>M</strong>=Meow</div>
+  </div>
 
-    <!-- Live region for screen readers -->
-    <div aria-live="polite" aria-atomic="true" id="live" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"></div>
-  </main>
+  <!-- spinner overlay -->
+  <div id="spinnerOverlay" class="overlay center" aria-hidden="true">
+    <div class="modal center" style="flex-direction:column;">
+      <div class="spinner" id="spinner">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+      <div style="height:10px"></div>
+      <div id="spinnerText" style="font-weight:700;color:#333">Processing your answer...</div>
+    </div>
+  </div>
+
+  <!-- terms modal -->
+  <div id="termsOverlay" class="overlay center" aria-hidden="true">
+    <div class="modal">
+      <h3>Terms & Conditions — Important</h3>
+      <p class="tiny">Please read the following terms carefully before you proceed. It's long. Very long.</p>
+      <div class="termsBody" id="termsBody" tabindex="0" aria-label="terms">
+        <!-- many repeated lines to create long scroll -->
+        <div class="termLine">1. By responding you consent to feelings, smiles, and chocolate.</div>
+        <div class="termLine">2. You agree to occasional memes.</div>
+        <!-- programmatically append many lines for infinite-length effect -->
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end;">
+        <button id="agreeBtn" class="control">I Agree</button>
+        <button id="declineTerms" class="control">Nope</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- cat modal -->
+  <div id="catOverlay" class="overlay center" aria-hidden="true">
+    <div class="modal center" style="flex-direction:column">
+      <div class="cat">
+        <!-- cute inline SVG cat -->
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g transform="translate(10,10)">
+            <ellipse cx="50" cy="60" rx="34" ry="30" fill="#ffd6e0"/>
+            <ellipse cx="30" cy="36" rx="8" ry="10" fill="#ffd6e0"/>
+            <ellipse cx="70" cy="36" rx="8" ry="10" fill="#ffd6e0"/>
+            <circle cx="40" cy="58" r="4" fill="#333"/>
+            <circle cx="60" cy="58" r="4" fill="#333"/>
+            <path d="M45 72 Q50 78 55 72" stroke="#cc4d6d" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M10 28 Q0 12 18 10 Q36 8 44 24" fill="#ffd6e0" />
+            <path d="M90 28 Q100 12 82 10 Q64 8 56 24" fill="#ffd6e0" />
+            <circle cx="50" cy="46" r="3" fill="#fff" opacity="0.6"/>
+          </g>
+        </svg>
+        <div style="margin-top:10px;font-weight:800;color:#333">I brought treats. Say yes. 🐱</div>
+      </div>
+
+      <div style="height:12px"></div>
+      <div style="display:flex;gap:10px">
+        <button id="catCuddle" class="yes">Cuddle</button>
+        <button id="catPoke" class="control">Poke</button>
+      </div>
+    </div>
+  </div>
 
 <script>
-(() => {
-  // ---------- Config & copy ----------
-  const STATES = [
-    "Will you be my Valentine? ❤️",
-    "Are you sure? I’d really love it 🥺",
-    "I’ll plan something special ✨",
-    "Chocolates + your favorite movie? 🍫🎬",
-    "One last sweet ask… please? 😭❤️"
-  ];
-  const ANNOUNCES = [
-    "Initial ask shown",
-    "Gentle follow-up",
-    "Promise: special plans",
-    "Offer: chocolates and movie",
-    "Final gentle ask"
-  ];
-  const LOCAL_KEY = "valentine_v2";
+/* FULL UNHINGED LOGIC
+   - No button mischief: dodge, teleport, lie, clone, shrink
+   - Spinner / fake-processing -> ERROR: You meant YES
+   - Terms modal impossible to finish
+   - Cat popup with options
+   - Confetti + hearts + emoji storm
+   - Sound effects via WebAudio (boing, pop, tada)
+   - Chaos meter alters intensity
+   - Keyboard shortcuts & reset
+*/
 
-  // ---------- Elements ----------
-  const qEl = document.getElementById('q');
-  const yesBtn = document.getElementById('yesBtn');
-  const noBtn = document.getElementById('noBtn');
-  const attemptsEl = document.getElementById('attempts');
-  const live = document.getElementById('live');
-  const shareBtn = document.getElementById('shareBtn');
-  const resetBtn = document.getElementById('resetBtn');
-  const toggleStory = document.getElementById('toggleStory');
-  const card = document.getElementById('card');
-  const confettiCanvas = document.getElementById('confetti');
-  const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* Utilities */
+const $ = sel => document.querySelector(sel);
+const rand = (a,b) => a + Math.random() * (b - a);
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
 
-  // ---------- State ----------
-  let state = 0, attempts = 0, accepted = false, storyMode = false;
-  // Personalization
-  const params = new URLSearchParams(location.search);
-  const person = (params.get('name') || '').trim();
-  if(person) STATES[0] = `Hey ${person} — will you be my Valentine? ❤️`;
+/* Elements */
+const yesBtn = $('#yesBtn');
+const noBtn = $('#noBtn');
+const chaos = $('#chaos');
+const resetBtn = $('#reset');
+const spinnerOverlay = $('#spinnerOverlay');
+const spinnerText = $('#spinnerText');
+const termsOverlay = $('#termsOverlay');
+const termsBody = $('#termsBody');
+const agreeBtn = $('#agreeBtn');
+const declBtn = $('#declineTerms');
+const catOverlay = $('#catOverlay');
+const catCuddle = $('#catCuddle');
+const catPoke = $('#catPoke');
+const confettiCanvas = document.getElementById('confetti');
+const qEl = $('#q');
 
-  // Load persisted
+let intensity = Number(chaos.value || 7);
+let attempts = 0;
+let yesCount = 0;
+let unhingedLevel = intensity;
+
+/* WebAudio sounds */
+let audioCtx = null;
+function ensureAudio(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+function playBeep(freq=440, dur=0.12, type='sine', vol=0.12){
   try {
-    const s = JSON.parse(localStorage.getItem(LOCAL_KEY) || '{}');
-    if(s && typeof s.state === 'number'){ state = s.state; attempts = s.attempts || 0; accepted = !!s.accepted; }
-  } catch(e){ /* ignore */ }
+    ensureAudio();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    g.gain.setValueAtTime(vol, audioCtx.currentTime);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+    o.stop(audioCtx.currentTime + dur + 0.02);
+  } catch(e){}
+}
+function boing(){ playBeep(660,0.15,'sine',0.12); playBeep(880,0.12,'sine',0.06); }
+function pop(){ playBeep(780,0.06,'square',0.16); }
+function tada(){ playBeep(880,0.14,'sine',0.12); playBeep(660,0.22,'sine',0.12); playBeep(1100,0.12,'sine',0.08); }
 
-  // ---------- Utilities ----------
-  function persist(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify({state,attempts,accepted})); }catch(e){} }
-  function announce(i){ const msg = ANNOUNCES[Math.min(i,ANNOUNCES.length-1)] || qEl.textContent; live.textContent = msg; }
-  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+/* Confetti canvas */
+const ctx = confettiCanvas.getContext ? confettiCanvas.getContext('2d') : null;
+let confettiPieces = [];
+function resizeCanvas(){ confettiCanvas.width = window.innerWidth; confettiCanvas.height = window.innerHeight; }
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
-  // ---------- Render ----------
-  function render(){
-    qEl.textContent = STATES[clamp(state,0,STATES.length-1)];
-    attemptsEl.textContent = `Attempts: ${attempts}`;
-    if(accepted){
-      yesBtn.classList.add('pulse'); noBtn.style.display = 'none';
-      shareBtn.textContent = 'Share the joy';
-      resetBtn.textContent = 'Reset';
-    } else {
-      yesBtn.classList.remove('pulse'); noBtn.style.display = 'inline-flex';
-      if(state >= 2) noBtn.classList.add('deem'); else noBtn.classList.remove('deem');
-      shareBtn.textContent = 'Share';
+function spawnConfetti(count=60){
+  if(!ctx) return;
+  confettiPieces = [];
+  const colors = ['#ff4d6d','#ffd166','#06d6a0','#118ab2','#bd7efc','#ffd6e0'];
+  for(let i=0;i<count;i++){
+    confettiPieces.push({
+      x: Math.random()*confettiCanvas.width,
+      y: -10 - Math.random()*200,
+      w: 6 + Math.random()*10,
+      h: 8 + Math.random()*10,
+      vx: -2 + Math.random()*4,
+      vy: 2 + Math.random()*6,
+      rot: Math.random()*360,
+      vr: (-5 + Math.random()*10),
+      color: colors[i % colors.length],
+      life: 0
+    });
+  }
+  requestAnimationFrame(tickConfetti);
+}
+function tickConfetti(){
+  if(!ctx) return;
+  ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+  for(let p of confettiPieces){
+    p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.rot += p.vr; p.life += 1;
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot * Math.PI/180);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+    ctx.restore();
+  }
+  // keep animating while pieces exist
+  if(confettiPieces.some(p => p.y < confettiCanvas.height + 50)) requestAnimationFrame(tickConfetti);
+  else ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+}
+
+/* Hearts / emoji rain */
+function launchHearts(rate=120){
+  // rate = number per second approximate; we will spawn short bursts
+  if(rate <= 0) return;
+  const burst = Math.floor(rate/4) + Math.floor(Math.random()*rate/3);
+  for(let i=0;i<burst;i++){
+    const e = document.createElement('div');
+    e.className = 'heart';
+    e.style.left = (Math.random()*90)+'vw';
+    e.style.fontSize = (14 + Math.random()*34) + 'px';
+    e.textContent = Math.random() > 0.6 ? '💖' : '❤️';
+    document.body.appendChild(e);
+    // remove
+    setTimeout(()=> e.remove(), 4200 + Math.random()*2000);
+  }
+}
+
+/* Emoji storm (full-screen) */
+function emojiStorm(intensity=1){
+  const emojis = ['💘','💖','😍','🥰','😈','🍫','🌟','🎉','😻'];
+  const count = clamp(20 * intensity, 10, 300);
+  for(let i=0;i<count;i++){
+    const e = document.createElement('div');
+    e.className = 'heart';
+    e.style.left = (Math.random()*98)+'vw';
+    e.style.fontSize = (20 + Math.random()*48)+'px';
+    e.style.animationDuration = (2 + Math.random()*4)+'s';
+    e.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    document.body.appendChild(e);
+    setTimeout(()=> e.remove(), 1800 + Math.random()*4000);
+  }
+}
+
+/* No button mischief engine */
+let clones = [];
+function mischiefNo(evt, mode='move'){
+  // mode: move, lie, clone, shrink, teleport
+  attempts++;
+  const level = clamp(Number(chaos.value), 0, 10);
+  unhingedLevel = level;
+  if(level >= 2) boing();
+  if(level >= 6) pop();
+
+  // decide action probabilistically based on intensity
+  const rnd = Math.random() * 100;
+  if(mode === 'forcedMove' || rnd < (30 + level*4)){
+    // move away (teleport-ish)
+    const x = Math.random() * (window.innerWidth - 120);
+    const y = Math.random() * (window.innerHeight - 80);
+    noBtn.style.position = 'fixed';
+    noBtn.style.left = x + 'px';
+    noBtn.style.top = y + 'px';
+    if(level > 5) { // add small rotation / jitter
+      noBtn.style.transform = `rotate(${rand(-18,18)}deg)`;
+      setTimeout(()=> noBtn.style.transform = '', 800);
     }
   }
 
-  // ---------- Confetti (canvas) ----------
-  const ctx = confettiCanvas.getContext ? confettiCanvas.getContext('2d') : null;
-  let confettiPieces = [];
-  function resizeCanvas(){ confettiCanvas.width = window.innerWidth; confettiCanvas.height = window.innerHeight; }
-  function spawnConfetti(count=40){
-    if(prefersReduced || !ctx) return;
-    confettiPieces = [];
-    const colors = ['#ff4d6d','#ffd166','#06d6a0','#118ab2','#bd7efc'];
-    for(let i=0;i<count;i++){
-      confettiPieces.push({
-        x: Math.random()*confettiCanvas.width,
-        y: -10 - Math.random()*300,
-        w: 6 + Math.random()*10,
-        h: 8 + Math.random()*10,
-        vx: -1 + Math.random()*2,
-        vy: 2 + Math.random()*5,
-        rot: Math.random()*360,
-        vr: (-3 + Math.random()*6),
-        color: colors[i % colors.length],
-        life: 0
-      });
-    }
-    confettiCanvas.style.display = 'block';
-    requestAnimationFrame(tickConfetti);
-    setTimeout(()=>{ confettiPieces = []; }, 3200);
-  }
-  function tickConfetti(){
-    if(!ctx) return;
-    ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
-    for(let p of confettiPieces){
-      p.x += p.vx; p.y += p.vy; p.vy += 0.06; p.rot += p.vr; p.life += 1;
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rot * Math.PI/180);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
-      ctx.restore();
-    }
-    // continue while pieces exist
-    if(confettiPieces.length) requestAnimationFrame(tickConfetti);
-    else { ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height); confettiCanvas.style.display='none'; }
-  }
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
-
-  // ---------- Sound: simple chime via WebAudio ----------
-  let audioCtx = null;
-  function playChime(){
-    try {
-      if(!window.AudioContext) return;
-      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      // two-tone chime
-      const now = audioCtx.currentTime;
-      const o1 = audioCtx.createOscillator();
-      const o2 = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
-      o1.type = 'sine'; o2.type = 'sine';
-      o1.frequency.setValueAtTime(880, now); // A5
-      o2.frequency.setValueAtTime(660, now); // E5
-      g.gain.setValueAtTime(0, now);
-      g.gain.linearRampToValueAtTime(0.12, now + 0.005);
-      g.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
-      o1.connect(g); o2.connect(g); g.connect(audioCtx.destination);
-      o1.start(now); o2.start(now + 0.02);
-      o1.stop(now + 1.05); o2.stop(now + 1.05);
-    } catch(e){}
+  // lie occasionally: change text to "Yes" or "Maybe"
+  if(rnd > 70 && level >= 3){
+    noBtn.textContent = Math.random() > 0.4 ? 'Yes 😀' : 'Maybe?';
+    // after a moment, revert but spawn a clone that says "No"
+    setTimeout(() => {
+      if(Math.random() > 0.5) noBtn.textContent = 'No 🙈';
+      else noBtn.textContent = 'No...';
+      if(level >= 6) spawnClone();
+    }, 900 + Math.random()*1200);
   }
 
-  // ---------- Events ----------
-  noBtn.addEventListener('click', () => {
-    if(accepted) return;
-    attempts++;
-    state = clamp(state + 1, 0, STATES.length - 1);
-    render();
-    announce(state);
-    persist();
-    // lightweight micro-bump on No
-    noBtn.animate([{transform:'translateY(0)'},{transform:'translateY(-6px)'},{transform:'translateY(0)'}],{duration:220, easing:'ease-out'});
-    // analytics stub (non-blocking)
-    navigator.sendBeacon && navigator.sendBeacon('/analytics/valentine', JSON.stringify({action:'no',state,attempts,time:Date.now()}));
+  // clone spawn
+  if(rnd > (80 - level*2) || level >= 9) spawnClone();
+
+  // shrink / dodge (scale down then up)
+  if(rnd > (50 - level*3)){
+    noBtn.animate([{transform:'scale(1)'},{transform:'scale(.7)'},{transform:'scale(1)'}],{duration:320, easing:'cubic-bezier(.2,.8,.2,1)'});
+    noBtn.style.opacity = 0.9;
+    setTimeout(()=> noBtn.style.opacity = 1, 300);
+  }
+
+  // teleport to a random place with bigger chance at high intensity
+  if(Math.random()*100 < (5 + level*6)){
+    setTimeout(() => {
+      noBtn.style.left = (Math.random()*(window.innerWidth-120)) + 'px';
+      noBtn.style.top = (Math.random()*(window.innerHeight-80)) + 'px';
+    }, 40);
+  }
+
+  // sometimes trigger spinner prank
+  if(Math.random()*100 < (6 + level*6)){
+    showSpinnerPrank();
+  }
+
+  // occasionally drop a mini cat popup lure
+  if(Math.random()*100 < (4 + level*5)) {
+    showCatPopup();
+  }
+
+  // escalate: make Yes button grow
+  yesBtn.animate([{transform:'scale(1)'},{transform:`scale(${1 + level*0.03})`},{transform:'scale(1)'}],{duration:340});
+}
+
+/* spawn clone of No button that chases the cursor or moves around */
+function spawnClone(){
+  const c = noBtn.cloneNode(true);
+  c.style.position = 'fixed';
+  c.style.left = (Math.random()*(window.innerWidth-120)) + 'px';
+  c.style.top = (Math.random()*(window.innerHeight-80)) + 'px';
+  c.style.zIndex = 900;
+  c.style.opacity = 0.95;
+  c.classList.add('clone');
+  document.body.appendChild(c);
+  clones.push(c);
+  // make the clone playful: follow pointer for a while
+  let life = 0;
+  function chase(e){
+    const rect = c.getBoundingClientRect();
+    const dx = e.clientX - (rect.left + rect.width/2);
+    const dy = e.clientY - (rect.top + rect.height/2);
+    c.style.left = (rect.left + dx*0.12) + 'px';
+    c.style.top = (rect.top + dy*0.12) + 'px';
+  }
+  function onMove(e){ chase(e); life += 1; if(life > 400) { window.removeEventListener('mousemove', onMove); c.remove(); } }
+  window.addEventListener('mousemove', onMove);
+  // click on clone toggles a small pop
+  c.addEventListener('click', () => {
+    pop(); c.style.transform = 'scale(0.7)'; setTimeout(()=> c.remove(), 300);
   });
+  // auto remove after some time
+  setTimeout(()=> { try{ c.remove(); }catch(e){} }, 8000 + Math.random()*6000);
+}
 
-  yesBtn.addEventListener('click', () => {
-    if(accepted) return;
-    accepted = true;
-    attempts++;
-    render();
-    announce('Accepted — celebration!');
-    persist();
-    // show confetti and chime (gesture allowed)
-    spawnConfetti(60);
-    playChime();
-    // gentle celebration animation
-    yesBtn.animate([{transform:'scale(1)'},{transform:'scale(1.08)'},{transform:'scale(1)'}],{duration:600,easing:'cubic-bezier(.2,.8,.2,1)'});
-    // analytics stub
-    navigator.sendBeacon && navigator.sendBeacon('/analytics/valentine', JSON.stringify({action:'yes',state,attempts,time:Date.now()}));
-  });
+/* Spinner prank */
+let spinnerTimeout = null;
+function showSpinnerPrank(){
+  spinnerOverlay.style.display = 'grid';
+  spinnerOverlay.setAttribute('aria-hidden','false');
+  spinnerText.textContent = 'Processing your answer...';
+  // animate dots are CSS-based
+  // after a short delay flip to ERROR
+  clearTimeout(spinnerTimeout);
+  spinnerTimeout = setTimeout(() => {
+    spinnerText.textContent = 'ERROR: You meant YES — retrying...';
+    pop();
+    // dramatic flashing of Yes
+    let flashes = 6;
+    const f = setInterval(() => {
+      yesBtn.style.background = (yesBtn.style.background ? '' : 'linear-gradient(90deg,#ffd6e0,#ff4d6d)');
+      flashes--;
+      if(flashes <= 0) { clearInterval(f); yesBtn.style.background=''; spinnerOverlay.style.display='none'; spinnerOverlay.setAttribute('aria-hidden','true'); // force Yes emphasis
+          tada(); spawnConfetti(80); emojiStorm(clamp(Number(chaos.value),0,10)); }
+    }, 220);
+  }, 900 + Math.random()*1200);
+}
 
-  // Keyboard: Enter triggers current focus or yes, Escape triggers no
-  document.addEventListener('keyup', (e) => {
-    if(e.key === 'Enter'){
-      const active = document.activeElement;
-      if(active === noBtn) noBtn.click(); else yesBtn.click();
-    } else if(e.key === 'Escape'){
-      noBtn.click();
-    }
-  });
+/* Terms modal: create long content to make it impossible to finish */
+function openTerms(){
+  termsOverlay.style.display = 'grid';
+  termsOverlay.setAttribute('aria-hidden','false');
+  // populate many lines to simulate endless terms
+  termsBody.innerHTML = '';
+  for(let i=0;i<400;i++){
+    const d = document.createElement('div'); d.className = 'termLine';
+    d.textContent = `${i+1}. This is an important legal clause about feelings, chocolate & emojis. You agree to love, hugs, and occasional memes.`;
+    termsBody.appendChild(d);
+  }
+  // intentionally prevent reaching bottom by auto-scroll up slowly
+  termsBody.scrollTop = 0;
+  let upward = setInterval(() => {
+    if(termsOverlay.style.display !== 'grid'){ clearInterval(upward); return; }
+    // nudge scroll back up slowly to make reaching bottom near impossible
+    termsBody.scrollTop = Math.max(0, termsBody.scrollTop - 2);
+  }, 120);
+}
 
-  // Share
-  shareBtn.addEventListener('click', async () => {
-    const url = location.href;
-    const shareText = person ? `${person}, you made my day — will you be my Valentine?` : `I asked someone to be my Valentine — try: ${url}`;
-    if(navigator.share){
-      try { await navigator.share({title:'Valentine',text:shareText,url}); return; } catch(e){}
-    }
-    // fallback copy
-    try {
-      await navigator.clipboard.writeText(url);
-      alert('Link copied to clipboard — share the love 💌');
-    } catch(e){
-      prompt('Copy this link to share:', url);
-    }
-  });
+/* Cat popup */
+function showCatPopup(){
+  catOverlay.style.display = 'grid';
+  catOverlay.setAttribute('aria-hidden','false');
+  // small meow
+  boing();
+}
+function hideCatPopup(){ catOverlay.style.display = 'none'; catOverlay.setAttribute('aria-hidden','true'); }
 
-  // Reset
-  resetBtn.addEventListener('click', () => {
-    if(!confirm('Reset state and attempts?')) return;
-    state = 0; attempts = 0; accepted = false;
-    persist(); render(); announce(0);
-  });
+/* Emoji storm */
+function emojiStorm(level=1){
+  launchHearts(20 * level);
+}
 
-  // Story toggle
-  toggleStory.addEventListener('click', () => {
-    storyMode = !storyMode;
-    if(storyMode) card.classList.add('story'); else card.classList.remove('story');
-    toggleStory.textContent = storyMode ? 'Exit story' : 'Story';
-  });
+/* Confetti spawn helper */
+function spawnConfetti(amount=60){
+  spawnConfettiInternal(amount);
+}
+// wrapper to avoid name clash
+function spawnConfettiInternal(c){ spawnConfetti(c); }
 
-  // initial render & announce
-  render();
-  announce(state);
+/* Yes behavior */
+yesBtn.addEventListener('click', (e) => {
+  // unlock audio context
+  ensureAudio();
+  yesCount++;
+  qEl.textContent = 'YAYYY!! 💖 You said YES!';
+  tada(); spawnConfetti(120); emojiStorm(clamp(Number(chaos.value),0,10));
+  // large heart rain
+  for(let i=0;i<30;i++) setTimeout(()=> launchHearts(40), i*60);
+  // make the page a little chaotic in celebration
+  document.body.animate([{filter:'hue-rotate(0deg)'},{filter:'hue-rotate(360deg)'}],{duration:1800,iterations:1});
+  // after acceptance, make noBtn say "Okay fine"
+  setTimeout(()=> { noBtn.textContent = 'Okay fine 😅'; }, 800);
+});
 
-  // Expose debug/reset API
-  window.__valentine = {
-    state: () => ({state, attempts, accepted}),
-    reset: () => { state=0; attempts=0; accepted=false; persist(); render(); announce(0); }
-  };
+/* No behavior: attach many triggers */
+noBtn.addEventListener('mouseover', (e) => mischiefNo(e, 'move'));
+noBtn.addEventListener('mousemove', (e)=> { if(Math.random() < 0.05) mischiefNo(e); });
+noBtn.addEventListener('click', (e) => {
+  mischiefNo(e);
+  // sometimes open terms trap
+  if(Math.random()*100 < (10 + Number(chaos.value)*3)) openTerms();
+});
 
-  // Accessibility: ensure focus order and that buttons are reachable
-  yesBtn.setAttribute('aria-label','Yes — accept');
-  noBtn.setAttribute('aria-label','No — decline');
+/* Terms modal actions */
+agreeBtn.addEventListener('click', () => {
+  // trick: show success then immediately say "Oops you scrolled wrong"
+  spinnerOverlay.style.display='grid';
+  spinnerText.textContent = 'Applying your agreement...';
+  setTimeout(()=> {
+    spinnerText.textContent = 'ERROR: You scrolled the wrong way. You meant YES!';
+    pop();
+    setTimeout(()=> { spinnerOverlay.style.display='none'; spinnerOverlay.setAttribute('aria-hidden','true'); termsOverlay.style.display='none'; termsOverlay.setAttribute('aria-hidden','true'); showCatPopup(); }, 1200);
+  }, 1200);
+});
+declBtn.addEventListener('click', () => {
+  // if user declines terms, we taunt them
+  pop();
+  alert("Declining terms causes more feelings. Try again.");
+});
 
-  // Persist periodically just in case
-  setInterval(persist, 2000);
+/* cat modal actions */
+catCuddle.addEventListener('click', () => {
+  hideCatPopup();
+  // reward = immediate yes trigger
+  yesBtn.click();
+});
+catPoke.addEventListener('click', () => {
+  // the cat retaliates: spawn hearts and clone No
+  pop(); emojiStorm(4); spawnClone();
+});
 
-})();
+/* Chaos meter adjustments */
+chaos.addEventListener('input', (e) => {
+  intensity = Number(e.target.value);
+  // small audio cue
+  pop();
+});
+
+/* Keyboard shortcuts */
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'y' || e.key === 'Y') { yesBtn.click(); }
+  if(e.key === 'n' || e.key === 'N') { noBtn.click(); }
+  if(e.key === 'm' || e.key === 'M') { showCatPopup(); boing(); }
+  // secret: press 'u' for ultimate chaos
+  if(e.key === 'u' || e.key === 'U') {
+    chaos.value = 10; chaos.dispatchEvent(new Event('input'));
+    // full on unhinged
+    setTimeout(()=> { spawnConfetti(300); emojiStorm(10); }, 200);
+  }
+});
+
+/* Reset */
+resetBtn.addEventListener('click', () => {
+  // remove clones, hearts, clear overlays
+  document.querySelectorAll('.clone').forEach(n=>n.remove());
+  document.querySelectorAll('.heart').forEach(n=>n.remove());
+  spinnerOverlay.style.display='none'; spinnerOverlay.setAttribute('aria-hidden','true');
+  termsOverlay.style.display='none'; termsOverlay.setAttribute('aria-hidden','true');
+  catOverlay.style.display='none'; catOverlay.setAttribute('aria-hidden','true');
+  attempts = 0; yesCount = 0; qEl.textContent = 'Will you be my Valentine? ❤️';
+  noBtn.style.left=''; noBtn.style.top=''; noBtn.textContent='No 🙈'; noBtn.style.transform='';
+  pop();
+});
+
+/* initial playful nudges */
+setTimeout(()=> { if(Math.random() > 0.4) mischiefNo(null,'forcedMove'); }, 900);
+setTimeout(()=> { launchHearts(30); }, 600);
+
+/* Accessibility: ensure buttons tabbable */
+yesBtn.setAttribute('aria-label','Yes — accept');
+noBtn.setAttribute('aria-label','No — decline');
+
+/* Expose debug helpers */
+window.UNHINGE = {
+  spawnClone, mischiefNo, showSpinnerPrank, openTerms, showCatPopup, spawnConfetti: spawnConfettiInternal
+};
 </script>
 </body>
 </html>
