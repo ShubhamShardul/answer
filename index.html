@@ -28,6 +28,7 @@
   .tiny-muted{font-size:12px;color:#777;margin-top:8px}
   /* clones */
   .clone{position:fixed;z-index:900;cursor:pointer;padding:8px 12px;border-radius:12px;border:2px dashed rgba(0,0,0,0.06);background:#fff;font-weight:800}
+  svg{transition:transform 0.15s ease-out}
   @media (max-width:420px){ .card{padding:14px} h1{font-size:18px} }
 </style>
 </head>
@@ -52,10 +53,10 @@
     <div class="tiny-muted">Keys: Y = Yes, N = No, M = Meow</div>
   </main>
 
-  <!-- Cat modal -->
-  <div id="catOverlay" class="overlay" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" style="text-align:center">
-      <svg viewBox="0 0 120 120" style="width:140px;height:140px;margin:0 auto">
+  <!-- Cat modal (positioned, not full-screen overlay) -->
+  <div id="catContainer" style="position:fixed;bottom:20px;right:20px;display:none;z-index:998;pointer-events:auto">
+    <div style="background:#fff;border-radius:12px;padding:16px;box-shadow:0 12px 32px rgba(0,0,0,0.2);text-align:center;min-width:200px">
+      <svg viewBox="0 0 120 120" style="width:120px;height:120px;margin:0 auto">
         <g transform="translate(10,10)">
           <ellipse cx="50" cy="60" rx="34" ry="30" fill="#ffd6e0"/>
           <ellipse cx="30" cy="36" rx="8" ry="10" fill="#ffd6e0"/>
@@ -64,11 +65,12 @@
           <path d="M45 72 Q50 78 55 72" stroke="#cc4d6d" stroke-width="2" fill="none" stroke-linecap="round"/>
         </g>
       </svg>
-      <div style="font-weight:800;margin-top:10px">I brought treats. Be nice. 🐱</div>
-      <div style="height:12px"></div>
-      <div style="display:flex;gap:10px;justify-content:center">
-        <button id="catCuddle" class="yes">Cuddle</button>
-        <button id="catPoke" class="control">Poke</button>
+      <div style="font-weight:800;margin-top:10px;font-size:14px">I brought treats! 🐱</div>
+      <div style="height:8px"></div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button id="catCuddle" class="yes" style="padding:8px 12px;font-size:12px">Cuddle 💕</button>
+        <button id="catPoke" class="control" style="padding:8px 12px;font-size:12px">Poke 👉</button>
+        <button id="catClose" class="control" style="padding:8px 12px;font-size:12px">Close ✕</button>
       </div>
     </div>
   </div>
@@ -93,7 +95,7 @@ function now() { return Date.now(); }
 
 /* ---------- Elements ---------- */
 const yesBtn = $('#yesBtn'), noBtn = $('#noBtn'), chaos = $('#chaos'), resetBtn = $('#reset');
-const catOverlay = $('#catOverlay'), catCuddle = $('#catCuddle'), catPoke = $('#catPoke');
+const catContainer = $('#catContainer'), catCuddle = $('#catCuddle'), catPoke = $('#catPoke'), catClose = $('#catClose');
 const confettiCanvas = document.getElementById('confetti'), qEl = $('#q'), subtitle = $('#subtitle');
 
 /* ---------- State ---------- */
@@ -276,6 +278,10 @@ function moveNoButtonRandomly() {
 function accept() {
   if (STATE.accepted) return; // idempotent
   STATE.accepted = true;
+  
+  // Hide cat immediately
+  hideCat();
+  
   subtitle.textContent = 'YAY!! You said YES 💖';
   // visual + audio reward
   try { ensureAudio(); } catch(e){}
@@ -305,11 +311,18 @@ function catPokeHandler() {
     return;
   }
   STATE.lastPokeAt = nowTs;
+  
+  // Poke animation feedback
   pop();
-  // play a small animation: make overlay jiggle
-  catOverlay.style.transform = 'scale(1.02)';
-  setTimeout(()=> catOverlay.style.transform = '', 220);
-  // spawn *one* chasing yes clone (not immediate accept)
+  const catSvg = catContainer.querySelector('svg');
+  if (catSvg) {
+    catSvg.style.transform = 'scale(0.95) rotate(-5deg)';
+    setTimeout(() => {
+      catSvg.style.transform = 'scale(1) rotate(0deg)';
+    }, 150);
+  }
+  
+  // Spawn yes clone
   spawnYesClone();
 }
 
@@ -369,16 +382,17 @@ function showSpinnerPrank() {
   TIMERS.add(spinnerTimer);
 }
 
-/* showCat (modal) */
+/* showCat (shows cat in corner) */
 function showCat() {
-  catOverlay.style.display = 'grid';
-  catOverlay.setAttribute('aria-hidden','false');
+  if (!STATE.accepted) {
+    catContainer.style.display = 'block';
+    boing();
+  }
 }
 
-/* hideCat */
+/* hideCat (hides cat) */
 function hideCat() {
-  catOverlay.style.display = 'none';
-  catOverlay.setAttribute('aria-hidden','true');
+  catContainer.style.display = 'none';
 }
 
 /* ---------- Reset / cleanup ---------- */
@@ -446,10 +460,14 @@ yesBtn.addEventListener('click', () => {
 
 /* Cat actions */
 $('#catCuddle').addEventListener('click', () => {
-  hideCat(); accept();
+  hideCat(); 
+  accept();
 });
 $('#catPoke').addEventListener('click', () => {
   catPokeHandler();
+});
+$('#catClose').addEventListener('click', () => {
+  hideCat();
 });
 
 /* chaos slider update */
