@@ -1,145 +1,302 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Be My Valentine 💖</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Be My Valentine ❤️</title>
+<style>
+  :root{
+    --pink:#ff4d6d; --bg1:#fff0f3; --bg2:#ffe6eb; --muted:#8e8e8e;
+    --card-w:360px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#111}
+  body{
+    display:grid;place-items:center;
+    background:linear-gradient(180deg,var(--bg1),var(--bg2));
+    padding:20px;
+  }
 
-    body {
-      margin: 0;
-      height: 100vh;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
-    }
+  /* container (mobile-first) */
+  .card{
+    width:100%;max-width:var(--card-w);
+    background:#fff;border-radius:18px;padding:22px;
+    box-shadow:0 12px 30px rgba(0,0,0,0.12);
+    text-align:center;position:relative;
+  }
+  h1{margin:8px 0 18px;font-size:20px;line-height:1.25;color:var(--pink)}
+  p.meta{margin:0 0 16px;color:var(--muted);font-size:13px}
 
-    .box {
-      background: white;
-      padding: 35px 45px;
-      border-radius: 16px;
-      text-align: center;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.15);
-      position: relative;
-      z-index: 2;
-      animation: popIn 0.6s ease;
-    }
+  .actions{display:flex;gap:12px;justify-content:center}
+  button{flex:1;padding:12px 10px;border-radius:12px;border:0;font-weight:600;font-size:15px;cursor:pointer}
+  button:focus{outline:3px solid rgba(255,77,109,0.18)}
+  .yes{background:var(--pink);color:#fff;box-shadow:0 6px 18px rgba(255,77,109,0.18)}
+  .no{background:#f2f2f2;color:var(--muted);transition:transform .22s ease,opacity .22s ease}
+  .no.subtle{opacity:.5;transform:scale(.98)}
+  .yes.grow{transform:scale(1.04)}
 
-    h1 {
-      margin-bottom: 25px;
-      color: #ff4d6d;
-    }
+  .row{display:flex;gap:8px;margin-top:14px;justify-content:center;align-items:center}
+  .small{font-size:13px;color:var(--muted)}
+  .pill{background:#f7f7f7;padding:6px 10px;border-radius:999px;font-size:13px;color:#444}
 
-    button {
-      font-size: 18px;
-      padding: 12px 26px;
-      margin: 10px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
+  /* confetti */
+  .confetti {pointer-events:none;position:fixed;left:0;top:0;width:100%;height:100%;overflow:visible;z-index:9999}
+  .confetti__piece{position:absolute;width:10px;height:14px;opacity:0.95;transform-origin:center;will-change:transform,opacity}
 
-    button:hover {
-      transform: scale(1.05);
-    }
+  /* story mode (9:16) */
+  .story {aspect-ratio:9/16;max-width:420px;padding:28px;border-radius:20px}
 
-    .yes {
-      background: #ff4d6d;
-      color: white;
-    }
+  /* reduced motion */
+  @media (prefers-reduced-motion: reduce){
+    .yes.grow, .no {transition:none}
+    .confetti__piece {display:none}
+  }
 
-    .no {
-      background: #e0e0e0;
-      position: absolute;
-    }
-
-    @keyframes popIn {
-      from {
-        transform: scale(0.7);
-        opacity: 0;
-      }
-      to {
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
-
-    .heart {
-      position: absolute;
-      font-size: 20px;
-      animation: floatUp 6s linear infinite;
-      opacity: 0.6;
-    }
-
-    @keyframes floatUp {
-      from {
-        transform: translateY(100vh);
-      }
-      to {
-        transform: translateY(-10vh);
-      }
-    }
-  </style>
+  /* responsive text */
+  @media (max-width:420px){h1{font-size:18px}}
+</style>
 </head>
 <body>
+  <div class="card" id="card" role="application" aria-labelledby="q" >
+    <h1 id="q">Will you be my Valentine? ❤️</h1>
+    <p class="meta" id="subtitle">A tiny question with big feelings — you can say yes or say no (I’ll keep asking kindly).</p>
 
-  <div class="box">
-    <h1 id="question">Will you be my Valentine? ❤️</h1>
-    <button class="yes" onclick="sayYes()">Yes 💘</button>
-    <button class="no" id="noBtn" onclick="sayNo()">No 🙈</button>
+    <div class="actions" role="group" aria-label="Valentine choices">
+      <button id="yesBtn" class="yes" aria-describedby="attempts">Yes 💘</button>
+      <button id="noBtn" class="no" aria-describedby="attempts">No 🙈</button>
+    </div>
+
+    <div class="row" style="margin-top:12px">
+      <div class="pill" id="attempts">Attempts: 0</div>
+      <div style="width:8px"></div>
+      <button id="shareBtn" class="pill" style="border-radius:999px;background:transparent;border:1px solid #eee;cursor:pointer">Share</button>
+      <button id="toggleStory" class="pill" title="Toggle story/mobile ratio">Story</button>
+    </div>
+
+    <!-- live region for screen readers -->
+    <div aria-live="polite" aria-atomic="true" id="live" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"> </div>
   </div>
 
-  <script>
-    const messages = [
-      "Are you sure? 🥺❤️",
-      "Think again 😶‍🌫️💖",
-      "That button looks risky 😏",
-      "You can’t escape love 💕",
-      "Okay but… Valentine? 😭❤️"
-    ];
+  <!-- confetti container -->
+  <div class="confetti" id="confetti" aria-hidden="true"></div>
 
-    let noCount = 0;
+<script>
+/*  Senior-grade behavior:
+    - deterministic state escalation
+    - personalization via ?name=
+    - localStorage persistence
+    - accessible announcements
+    - confetti + sound (gesture-triggered)
+    - share link + webshare fallback
+    - analytics stub (non-blocking)
+*/
 
-    function sayNo() {
-      const question = document.getElementById("question");
-      question.innerText = messages[noCount % messages.length];
-      noCount++;
+(() => {
+  const STATES = [
+    "Will you be my Valentine? ❤️",
+    "Are you sure? I’d really love it 🥺",
+    "I’ll plan something special ✨",
+    "Chocolates + your favorite movie? 🍫🎬",
+    "One last sweet ask… please? 😭❤️"
+  ];
 
-      // Move the No button randomly
-      const btn = document.getElementById("noBtn");
-      const x = Math.random() * (window.innerWidth - 100);
-      const y = Math.random() * (window.innerHeight - 100);
-      btn.style.left = x + "px";
-      btn.style.top = y + "px";
+  const A11Y_ANNOUNCES = [
+    "Initial ask shown",
+    "Second ask: gentle follow-up",
+    "Third ask: promise special plans",
+    "Fourth ask: offer chocolates and movie",
+    "Final ask: last gentle ask"
+  ];
+
+  const LOCAL_KEY = "valentine_state_v1";
+  const analyticsEndpoint = "/analytics/valentine"; // stub - non-blocking
+
+  // DOM
+  const q = document.getElementById("q");
+  const yesBtn = document.getElementById("yesBtn");
+  const noBtn = document.getElementById("noBtn");
+  const attemptsEl = document.getElementById("attempts");
+  const live = document.getElementById("live");
+  const confettiRoot = document.getElementById("confetti");
+  const shareBtn = document.getElementById("shareBtn");
+  const toggleStory = document.getElementById("toggleStory");
+  const card = document.getElementById("card");
+
+  // state
+  let state = 0;
+  let attempts = 0;
+  let accepted = false;
+  let storyMode = false;
+
+  // personalization from ?name= param
+  function getParam(name){
+    try {
+      const p = new URLSearchParams(location.search);
+      return p.get(name);
+    } catch(e){return null}
+  }
+  const person = decodeURIComponent(getParam('name') || '').trim();
+  if(person) {
+    STATES[0] = `Hey ${person} — will you be my Valentine? ❤️`;
+  }
+
+  // load persisted
+  try {
+    const saved = JSON.parse(localStorage.getItem(LOCAL_KEY) || '{}');
+    if(saved && typeof saved.state === 'number') { state = saved.state; attempts = saved.attempts || 0; accepted = !!saved.accepted; }
+  } catch(e){/*ignore*/}
+
+  // render
+  function render(){
+    q.textContent = STATES[Math.min(state, STATES.length-1)];
+    attemptsEl.textContent = `Attempts: ${attempts}`;
+    // visual emphasis rules
+    if(accepted){
+      yesBtn.classList.add('grow');
+      noBtn.style.display='none';
+      shareBtn.textContent = "Share the joy";
+    } else {
+      yesBtn.classList.remove('grow');
+      noBtn.style.display='inline-flex';
+      // de-emphasize No progressively
+      if(state >= 2) noBtn.classList.add('subtle'); else noBtn.classList.remove('subtle');
     }
+  }
 
-    function sayYes() {
-      document.body.innerHTML = `
-        <div class="box">
-          <h1>YAYYYY!! 💖🥰</h1>
-          <p>You just made my day 💕</p>
-        </div>
-      `;
+  // persist non-blocking
+  function persist(){
+    try {
+      localStorage.setItem(LOCAL_KEY, JSON.stringify({state, attempts, accepted}));
+    } catch(e){}
+  }
+
+  // announce for SR
+  function announce(i){
+    const msg = A11Y_ANNOUNCES[Math.min(i, A11Y_ANNOUNCES.length-1)] || q.textContent;
+    live.textContent = msg;
+  }
+
+  // confetti (simple)
+  function fireConfetti(count = 40){
+    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const colors = ['#ff4d6d','#ffd166','#06d6a0','#118ab2','#bd7efc'];
+    const w = window.innerWidth, h = window.innerHeight;
+    for(let i=0;i<count;i++){
+      const el = document.createElement('div');
+      el.className = 'confetti__piece';
+      el.style.left = Math.random() * w + 'px';
+      el.style.top = '-20px';
+      el.style.background = colors[i % colors.length];
+      el.style.transform = `rotate(${Math.random()*360}deg)`;
+      el.style.width = (8 + Math.random()*8) + 'px';
+      el.style.height = (10 + Math.random()*8) + 'px';
+      el.style.opacity = 0.95;
+      // animation via JS + requestAnimationFrame for lightness
+      confettiRoot.appendChild(el);
+      // drop & spin
+      const dur = 2400 + Math.random()*2000;
+      const start = performance.now();
+      (function animate(now){
+        const t = Math.min(1, (now - start) / dur);
+        el.style.top = (-20 + t * (h + 40)) + 'px';
+        el.style.transform = `translateY(${t*20}px) rotate(${t*720}deg)`;
+        el.style.opacity = 1 - t;
+        if(t < 1) requestAnimationFrame(animate); else el.remove();
+      })(performance.now());
     }
+  }
 
-    // Floating hearts
-    setInterval(() => {
-      const heart = document.createElement("div");
-      heart.className = "heart";
-      heart.innerText = "❤️";
-      heart.style.left = Math.random() * 100 + "vw";
-      heart.style.animationDuration = 4 + Math.random() * 4 + "s";
-      document.body.appendChild(heart);
+  // sound (gesture required)
+  let yesAudio = null;
+  function initAudio(){
+    try {
+      yesAudio = new Audio();
+      // embed a short beep encoded as dataURI (tiny, non-copyright)
+      yesAudio.src = "data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAA"; // placeholder silent; replace with valid dataURI if desired
+      yesAudio.preload = 'auto';
+    } catch(e){}
+  }
 
-      setTimeout(() => heart.remove(), 8000);
-    }, 400);
-  </script>
+  // analytics (non-blocking)
+  function sendAnalytics(e){
+    try {
+      navigator.sendBeacon && navigator.sendBeacon(analyticsEndpoint, JSON.stringify(e)) ||
+      fetch(analyticsEndpoint, {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(e)}).catch(()=>{});
+    } catch(e){}
+  }
 
+  // event handlers
+  noBtn.addEventListener('click', (ev) => {
+    if(accepted) return;
+    attempts++;
+    // deterministic escalation
+    state = Math.min(state + 1, STATES.length - 1);
+    render();
+    announce(state);
+    persist();
+    sendAnalytics({action:'no_clicked',state,attempts,timestamp:Date.now()});
+  });
+
+  yesBtn.addEventListener('click', (ev) => {
+    if(accepted) return;
+    accepted = true;
+    attempts++;
+    render();
+    announce('Accepted — celebration!');
+    persist();
+    // small animations & confetti + sound
+    fireConfetti(50);
+    try { yesAudio && yesAudio.play().catch(()=>{}); } catch(e){}
+    sendAnalytics({action:'yes_clicked',state,attempts,timestamp:Date.now()});
+  });
+
+  // keyboard accessibility
+  document.addEventListener('keyup', (ev) => {
+    if(ev.key === 'Enter'){
+      // prefer currently focused or default to Yes
+      const active = document.activeElement;
+      if(active === noBtn) noBtn.click();
+      else yesBtn.click();
+    }
+    if(ev.key === 'Escape'){
+      // quick toggle no
+      noBtn.click();
+    }
+  });
+
+  // share behavior
+  shareBtn.addEventListener('click', async () => {
+    const shareText = person ? `${person}, you made my day — you said yes! 💖` : `I just asked someone to be my Valentine — try it: ${location.href}`;
+    if(navigator.share){
+      try { await navigator.share({title:'Valentine',text:shareText,url:location.href}); sendAnalytics({action:'shared_webshare'}); return; } catch(e){}
+    }
+    // fallback: copy
+    try {
+      await navigator.clipboard.writeText(location.href);
+      alert('Link copied to clipboard — share the love 💌');
+      sendAnalytics({action:'shared_copy'});
+    } catch(e){
+      prompt('Copy this link to share:', location.href);
+      sendAnalytics({action:'shared_prompt'});
+    }
+  });
+
+  // story / ratio toggle
+  toggleStory.addEventListener('click', () => {
+    storyMode = !storyMode;
+    if(storyMode) card.classList.add('story'); else card.classList.remove('story');
+    toggleStory.textContent = storyMode ? 'Exit story' : 'Story';
+  });
+
+  // initial UI
+  initAudio();
+  render();
+  announce(state);
+
+  // expose debug for tests
+  window.__valentine = {getState:()=>({state,attempts,accepted}),reset:()=>{state=0;attempts=0;accepted=false;persist();render();announce(0)}};
+
+})();
+</script>
 </body>
 </html>
