@@ -564,6 +564,7 @@ function launchHearts(rate=30){
 let clonesCount = 0;
 const cloneListeners = new Map(); // track listeners per clone
 function spawnYesClone() {
+  console.log('👯 SPAWN CLONE CALLED - clonesCount:', clonesCount, new Error().stack.split('\n').slice(0, 4).join('\n'));
   if (STATE.accepted) return;
   if (clonesCount >= CONFIG.MAX_CLONES) return; // limit clones
   clonesCount++;
@@ -646,8 +647,10 @@ function spawnYesClone() {
     cloneClicked = true;
     try { 
       c.remove();
-      const listener = cloneListeners.get(c);
-      if (listener) window.removeEventListener('mousemove', listener);
+      const listenerObj = cloneListeners.get(c);
+      if (listenerObj && listenerObj.cleanupChaseListener) {
+        listenerObj.cleanupChaseListener();
+      }
       cloneListeners.delete(c);
     } catch(e){}
     clonesCount = Math.max(0, clonesCount-1);
@@ -738,6 +741,9 @@ function accept() {
   if (STATE.accepted || STATE.yesBtnClicked) return; // Prevent multiple accepts
   STATE.yesBtnClicked = true;
   STATE.accepted = true;
+  
+  // Debug: log stack trace to see where accept was called from
+  console.log('✅ ACCEPT CALLED', new Error().stack.split('\n').slice(0, 5).join('\n'));
   
   // Disable yes button immediately to prevent clicks
   if (yesBtn) {
@@ -830,6 +836,7 @@ function catPokeHandler() {
 
 /* ---------- Misbehavior when clicking/hovering No ---------- */
 function onNoInteracted() {
+  console.log('🙈 NO BUTTON INTERACTED - NOT calling accept()');
   if (STATE.accepted || !noBtn) return; // Safety check
   STATE.attempts++;
   // Just move the button - no pranks, no clones
@@ -885,6 +892,7 @@ function showSpinnerPrank() {
 
 /* showCat (shows cat in corner) */
 function showCat() {
+  console.log('🐱 SHOW CAT CALLED', new Error().stack.split('\n').slice(0, 4).join('\n'));
   if (!catContainer || STATE.accepted) return;
   const catSvg = catContainer.querySelector('svg');
   if (catSvg && catSvg.style) catSvg.style.transform = 'scale(1) rotate(0deg)'; // Reset SVG state
