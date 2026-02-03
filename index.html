@@ -2,40 +2,88 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Valentine?</title>
+  <title>Be My Valentine 💖</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      font-family: Arial, sans-serif;
-      background: #ffe6eb;
-      text-align: center;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
     }
+
     .box {
       background: white;
-      padding: 30px 40px;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      padding: 35px 45px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+      position: relative;
+      z-index: 2;
+      animation: popIn 0.6s ease;
     }
+
     h1 {
-      margin-bottom: 20px;
+      margin-bottom: 25px;
+      color: #ff4d6d;
     }
+
     button {
       font-size: 18px;
-      padding: 10px 20px;
+      padding: 12px 26px;
       margin: 10px;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
+      transition: transform 0.2s ease;
     }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
     .yes {
       background: #ff4d6d;
       color: white;
     }
+
     .no {
-      background: #ccc;
+      background: #e0e0e0;
+      position: absolute;
+    }
+
+    @keyframes popIn {
+      from {
+        transform: scale(0.7);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .heart {
+      position: absolute;
+      font-size: 20px;
+      animation: floatUp 6s linear infinite;
+      opacity: 0.6;
+    }
+
+    @keyframes floatUp {
+      from {
+        transform: translateY(100vh);
+      }
+      to {
+        transform: translateY(-10vh);
+      }
     }
   </style>
 </head>
@@ -43,21 +91,54 @@
 
   <div class="box">
     <h1 id="question">Will you be my Valentine? ❤️</h1>
-    <button class="yes" onclick="sayYes()">Yes</button>
-    <button class="no" onclick="sayNo()">No</button>
+    <button class="yes" onclick="sayYes()">Yes 💘</button>
+    <button class="no" id="noBtn" onclick="sayNo()">No 🙈</button>
   </div>
 
   <script>
+    const messages = [
+      "Are you sure? 🥺❤️",
+      "Think again 😶‍🌫️💖",
+      "That button looks risky 😏",
+      "You can’t escape love 💕",
+      "Okay but… Valentine? 😭❤️"
+    ];
+
+    let noCount = 0;
+
     function sayNo() {
-      document.getElementById("question").innerText =
-        "Will you be my Valentine? 🥺❤️";
+      const question = document.getElementById("question");
+      question.innerText = messages[noCount % messages.length];
+      noCount++;
+
+      // Move the No button randomly
+      const btn = document.getElementById("noBtn");
+      const x = Math.random() * (window.innerWidth - 100);
+      const y = Math.random() * (window.innerHeight - 100);
+      btn.style.left = x + "px";
+      btn.style.top = y + "px";
     }
 
     function sayYes() {
-      document.getElementById("question").innerText =
-        "Yayyyy!! 💖🥰 I knew it!";
-      document.querySelector(".no").style.display = "none";
+      document.body.innerHTML = `
+        <div class="box">
+          <h1>YAYYYY!! 💖🥰</h1>
+          <p>You just made my day 💕</p>
+        </div>
+      `;
     }
+
+    // Floating hearts
+    setInterval(() => {
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      heart.innerText = "❤️";
+      heart.style.left = Math.random() * 100 + "vw";
+      heart.style.animationDuration = 4 + Math.random() * 4 + "s";
+      document.body.appendChild(heart);
+
+      setTimeout(() => heart.remove(), 8000);
+    }, 400);
   </script>
 
 </body>
