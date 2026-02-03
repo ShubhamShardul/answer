@@ -103,8 +103,15 @@
     box-shadow:0 8px 24px rgba(255,77,109,0.3);
   }
   
-  .yes:hover{
-    box-shadow:0 12px 32px rgba(255,77,109,0.4);
+  .yes:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: 0 4px 12px rgba(255,77,109,0.15);
+  }
+  
+  .yes:disabled:hover {
+    box-shadow: 0 4px 12px rgba(255,77,109,0.15);
+    transform: none;
   }
   
   .no{
@@ -221,6 +228,7 @@
     z-index:6;
     animation:floatUp 4s linear;
     filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    animation-delay: var(--delay, 0s);
   }
   
   @keyframes floatUp { 
@@ -308,27 +316,6 @@
     filter:drop-shadow(0 4px 12px rgba(255,77,109,0.15));
   }
   
-  .keymap{
-    display:flex;
-    gap:12px;
-    justify-content:center;
-    margin-top:20px;
-    flex-wrap:wrap;
-  }
-  
-  .key{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    font-size:11px;
-    color:var(--muted);
-    font-weight:600;
-    background:rgba(0,0,0,0.03);
-    padding:6px 10px;
-    border-radius:8px;
-    border:1px solid rgba(0,0,0,0.08);
-  }
-  
   @media (max-width:480px){ 
     .card{
       padding:28px 20px;
@@ -412,13 +399,19 @@ const catContainer = $('#catContainer'), catCuddle = $('#catCuddle'), catPoke = 
 const confettiCanvas = document.getElementById('confetti'), qEl = $('#q');
 const subtitle = document.querySelector('.sub');
 
+// Safety check: ensure critical elements exist
+if (!yesBtn || !noBtn || !qEl || !subtitle || !confettiCanvas) {
+  console.error('Critical DOM elements missing. App may not work.');
+}
+
 /* ---------- State ---------- */
 const STATE = {
   accepted: false,
   attempts: 0,
   chaos: 7,
   lastPokeAt: 0,
-  clonesActive: 0
+  clonesActive: 0,
+  yesBtnClicked: false // debounce flag for yes button
 };
 
 const CONFIG = {
@@ -430,15 +423,33 @@ const CONFIG = {
 /* track timers/intervals so we can clear them */
 const TIMERS = new Set();
 
+/* Track cat button listeners for cleanup */
+let catButtonListeners = {
+  cuddle: null,
+  poke: null,
+  close: null
+};
+
 /* ---------- Audio (gesture-friendly) ---------- */
 let audioCtx = null;
 function ensureAudio() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+  if (!audioCtx) {
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch(e) {
+      console.warn('Audio context creation failed:', e);
+      return false;
+    }
+  }
+  // Only resume if suspended, don't force if running
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume().catch(() => {});
+  }
+  return audioCtx.state === 'running' || audioCtx.state === 'interrupted';
 }
 function playTone(freq=660, dur=0.12, type='sine', vol=0.12) {
   try {
-    ensureAudio();
+    if (!ensureAudio()) return; // Single call, check result
     const o = audioCtx.createOscillator();
     const g = audioCtx.createGain();
     o.type = type;
@@ -448,7 +459,13 @@ function playTone(freq=660, dur=0.12, type='sine', vol=0.12) {
     o.start();
     g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
     // stop later
-    const stopId = setTimeout(() => { try { o.stop(); } catch(e){} }, (dur + 0.05) * 1000);
+    const stopId = setTimeout(() => { 
+      try { 
+        o.stop();
+        o.disconnect();
+        g.disconnect();
+      } catch(e){} 
+    }, (dur + 0.05) * 1000);
     TIMERS.add(stopId);
   } catch(e){}
 }
@@ -457,14 +474,26 @@ function pop(){ playTone(760,0.06,'square',0.14); }
 function tada(){ playTone(880,0.14,'sine',0.12); playTone(660,0.18,'sine',0.12); }
 
 /* ---------- Confetti (single, robust) ---------- */
-const ctx = confettiCanvas.getContext ? confettiCanvas.getContext('2d') : null;
+const ctx = confettiCanvas ? (confettiCanvas.getContext ? confettiCanvas.getContext('2d') : null) : null;
 let confettiPieces = [], confettiRaf = null;
-function resizeCanvas(){ confettiCanvas.width = window.innerWidth; confettiCanvas.height = window.innerHeight; }
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
+function resizeCanvas(){ 
+  if (!confettiCanvas) return; // Safety check
+  confettiCanvas.width = window.innerWidth; 
+  confettiCanvas.height = window.innerHeight;
+  // Clear confetti pieces when resizing to prevent clipping artifacts
+  confettiPieces = [];
+}
+if (confettiCanvas) {
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+}
 
 function spawnConfetti(count=60){
-  if (!ctx) return;
+  if (!ctx || !confettiCanvas) return; // Safety check
+  // Ensure canvas is properly sized
+  if (confettiCanvas.width <= 0 || confettiCanvas.height <= 0) {
+    resizeCanvas();
+  }
   for (let i=0;i<count;i++){
     confettiPieces.push({
       x: Math.random() * confettiCanvas.width,
@@ -482,8 +511,9 @@ function spawnConfetti(count=60){
   if (!confettiRaf) confettiRaf = requestAnimationFrame(tickConfetti);
 }
 function tickConfetti(){
-  if (!ctx) return;
+  if (!ctx || !confettiCanvas) return; // Safety check
   ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+  if (!Array.isArray(confettiPieces)) confettiPieces = []; // Validate array
   for (const p of confettiPieces){
     p.x += p.vx; p.y += p.vy; p.vy += 0.06; p.rot += p.vr; p.life ++;
     ctx.save();
@@ -496,7 +526,7 @@ function tickConfetti(){
   // garbage collect off-screen
   confettiPieces = confettiPieces.filter(p => p.y < confettiCanvas.height + 100);
   if (confettiPieces.length) confettiRaf = requestAnimationFrame(tickConfetti);
-  else { cancelAnimationFrame(confettiRaf || 0); confettiRaf = null; ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height); }
+  else { cancelAnimationFrame(confettiRaf || 0); confettiRaf = null; ctx && ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height); }
 }
 
 /* ---------- Hearts / emoji ---------- */
@@ -509,8 +539,14 @@ function launchHearts(rate=30){
     el.style.fontSize = (14 + Math.random()*32) + 'px';
     el.textContent = Math.random() > 0.6 ? '💖' : '❤️';
     el.style.setProperty('--delay', (i * 0.05) + 's');
-    // Ensure element is in DOM before accessing
-    if (document.body) document.body.appendChild(el);
+    // Ensure element is in DOM before accessing and document.body exists
+    if (document.body) {
+      try {
+        document.body.appendChild(el);
+      } catch(e) {
+        console.error('Failed to append heart:', e);
+      }
+    }
     const t = setTimeout(()=> {
       try {
         el.style.opacity = '0';
@@ -536,9 +572,15 @@ function spawnYesClone() {
   const c = document.createElement('button');
   c.className = 'clone';
   c.textContent = 'Yes! 😍';
-  // initial position
-  const left = Math.random()*(window.innerWidth - 120);
-  const top = Math.random()*(window.innerHeight - 70);
+  let cloneClicked = false; // debounce flag
+  // initial position - ensure within safe viewport
+  const pad = 20;
+  const cloneBtnW = 80;
+  const cloneBtnH = 40;
+  const maxLeft = Math.max(pad, window.innerWidth - cloneBtnW - pad);
+  const maxTop = Math.max(pad, window.innerHeight - cloneBtnH - pad);
+  let left = Math.max(pad, Math.min(Math.random()*(window.innerWidth - cloneBtnW), maxLeft));
+  let top = Math.max(pad, Math.min(Math.random()*(window.innerHeight - cloneBtnH), maxTop));
   c.style.left = left + 'px';
   c.style.top = top + 'px';
   c.style.padding = '8px 12px';
@@ -546,28 +588,62 @@ function spawnYesClone() {
 
   // chase behavior
   function chase(e){
-    const r = c.getBoundingClientRect();
-    const dx = e.clientX - (r.left + r.width/2);
-    const dy = e.clientY - (r.top + r.height/2);
-    c.style.left = (r.left + dx*0.12) + 'px';
-    c.style.top = (r.top + dy*0.12) + 'px';
+    try {
+      // Guard: check if clone still exists in DOM
+      if (!document.body.contains(c)) {
+        cleanupChaseListener();
+        return;
+      }
+      const r = c.getBoundingClientRect();
+      if (!r) return; // BoundingClientRect unavailable
+      const dx = e.clientX !== undefined ? e.clientX : (e.touches?.[0]?.clientX || 0);
+      const dy = e.clientY !== undefined ? e.clientY : (e.touches?.[0]?.clientY || 0);
+      c.style.left = (r.left + (dx - r.left - r.width/2)*0.12) + 'px';
+      c.style.top = (r.top + (dy - r.top - r.height/2)*0.12) + 'px';
+    } catch(e){}
   }
+  
+  // Cleanup function for chase listeners
+  function cleanupChaseListener() {
+    window.removeEventListener('mousemove', chase);
+    window.removeEventListener('touchmove', chase);
+    window.removeEventListener('mouseup', onChaseEnd);
+    window.removeEventListener('touchend', onChaseEnd);
+  }
+  
+  // Stop chasing on mouse/touch up
+  function onChaseEnd() {
+    cleanupChaseListener();
+  }
+  
   window.addEventListener('mousemove', chase);
-  cloneListeners.set(c, chase);
+  window.addEventListener('touchmove', chase);
+  window.addEventListener('mouseup', onChaseEnd);
+  window.addEventListener('touchend', onChaseEnd);
+  cloneListeners.set(c, { chase, cleanupChaseListener, onChaseEnd });
 
   // clicking clone triggers accept() once and removes clone
-  c.addEventListener('click', () => {
-    c.remove();
-    const listener = cloneListeners.get(c);
-    if (listener) window.removeEventListener('mousemove', listener);
-    cloneListeners.delete(c);
+  const onCloneClick = () => {
+    if (cloneClicked) return; // Prevent multiple clicks
+    cloneClicked = true;
+    try {
+      c.remove();
+      const listenerObj = cloneListeners.get(c);
+      if (listenerObj && listenerObj.cleanupChaseListener) {
+        listenerObj.cleanupChaseListener();
+      }
+      cloneListeners.delete(c);
+    } catch(e){}
     clonesCount = Math.max(0, clonesCount-1);
     STATE.clonesActive = clonesCount;
     accept();
-  });
+  };
+  c.addEventListener('click', onCloneClick);
 
   // auto-remove after TTL
   const ttl = setTimeout(()=> {
+    if (cloneClicked) return; // Already removed by click
+    cloneClicked = true;
     try { 
       c.remove();
       const listener = cloneListeners.get(c);
@@ -580,27 +656,73 @@ function spawnYesClone() {
   TIMERS.add(ttl);
 }
 
-/* ---------- Move No button safely (keeps it visible) ---------- */
+/* Move No button safely (keeps it visible, avoids card) */
 function moveNoButtonRandomly() {
+  if (!noBtn) return; // Safety check
   const pad = 20; // larger safety pad
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const btnW = 100; // fixed estimate
-  const btnH = 44;  // fixed estimate
+  
+  // Get actual button dimensions from element
+  let btnW = 100;
+  let btnH = 44;
+  try {
+    const rect = noBtn.getBoundingClientRect();
+    btnW = Math.max(80, rect.width || 100);
+    btnH = Math.max(40, rect.height || 44);
+  } catch(e) {}
+  
+  // Get card bounds to avoid overlap (accounting for viewport positioning)
+  const card = document.querySelector('.card');
+  let cardRect = null;
+  if (card) {
+    cardRect = card.getBoundingClientRect();
+  }
   
   // On mobile, constrain to safe area (avoid keyboard, edges)
   const isMobile = vw < 600;
   const safeBottom = isMobile ? 100 : 60; // extra space on mobile for keyboard
   
   // ensure we have room
-  if (vw < btnW + pad*2 || vh < btnH + pad*2 + safeBottom) return;
+  if (vw < btnW + pad*2 || vh < btnH + pad*2 + safeBottom) {
+    // Fallback: position in bottom-left corner
+    noBtn.style.position = 'fixed';
+    noBtn.style.left = pad + 'px';
+    noBtn.style.top = (vh - btnH - pad - safeBottom) + 'px';
+    noBtn.style.transform = '';
+    noBtn.style.pointerEvents = 'auto';
+    noBtn.style.display = 'block';
+    noBtn.style.visibility = 'visible';
+    return;
+  }
   
-  let left = Math.random() * (vw - btnW - pad*2) + pad;
-  let top = Math.random() * (vh - btnH - pad*2 - safeBottom) + pad;
+  // Try random positions until we find one that doesn't overlap card
+  let attempts = 0;
+  let left, top;
+  let foundGood = false;
   
-  // extra safety clamp
-  left = clamp(left, pad, vw - btnW - pad);
-  top  = clamp(top, pad, vh - btnH - pad - safeBottom);
+  while (attempts < 20 && !foundGood) {
+    left = Math.random() * (vw - btnW - pad*2) + pad;
+    top = Math.random() * (vh - btnH - pad*2 - safeBottom) + pad;
+    
+    // extra safety clamp
+    left = clamp(left, pad, vw - btnW - pad);
+    top  = clamp(top, pad, vh - btnH - pad - safeBottom);
+    
+    // Check if position overlaps card (viewport coordinates already account for scroll)
+    if (cardRect) {
+      const btnRight = left + btnW;
+      const btnBottom = top + btnH;
+      const overlap = !(btnRight < cardRect.left - 20 || 
+                       left > cardRect.right + 20 || 
+                       btnBottom < cardRect.top - 20 || 
+                       top > cardRect.bottom + 20);
+      if (!overlap) foundGood = true;
+    } else {
+      foundGood = true;
+    }
+    attempts++;
+  }
   
   noBtn.style.position = 'fixed';
   noBtn.style.left = left + 'px';
@@ -613,45 +735,65 @@ function moveNoButtonRandomly() {
 
 /* ---------- accept() idempotent ---------- */
 function accept() {
-  if (STATE.accepted) return; // idempotent
+  if (STATE.accepted || STATE.yesBtnClicked) return; // Prevent multiple accepts
+  STATE.yesBtnClicked = true;
   STATE.accepted = true;
+  
+  // Disable yes button immediately to prevent clicks
+  if (yesBtn) {
+    yesBtn.disabled = true;
+  }
   
   // Hide cat immediately
   hideCat();
   
-  subtitle.textContent = 'YAY!! You said YES 💖';
-  subtitle.style.animation = 'none';
-  setTimeout(() => {
-    subtitle.style.animation = 'bounce 0.6s cubic-bezier(0.34,1.56,0.64,1)';
-  }, 10);
+  if (subtitle) {
+    subtitle.textContent = 'YAY!! You said YES 💖';
+    subtitle.style.animation = 'none';
+    subtitle.style.opacity = '1'; // Ensure visible
+    setTimeout(() => {
+      if (subtitle) subtitle.style.animation = 'bounce 0.6s cubic-bezier(0.34,1.56,0.64,1)';
+    }, 10);
+  }
   
   // visual + audio reward
-  try { ensureAudio(); } catch(e){}
+  try { 
+    if (ensureAudio()) {} // Check if audio started
+  } catch(e){}
   tada();
   spawnConfetti(140);
   launchHearts(120);
   
   // Animate main heading
-  qEl.style.animation = 'none';
-  setTimeout(() => {
-    qEl.style.animation = 'bounce 0.8s cubic-bezier(0.34,1.56,0.64,1)';
-  }, 10);
+  if (qEl) {
+    qEl.textContent = 'Will you be my Valentine? ❤️'; // Reset text first
+    qEl.style.animation = 'none';
+    qEl.style.opacity = '1'; // Ensure visible
+    setTimeout(() => {
+      if (qEl) qEl.style.animation = 'bounce 0.8s cubic-bezier(0.34,1.56,0.64,1)';
+    }, 10);
+  }
   
   // hide No button after a brief moment (explicit acceptance)
-  setTimeout(()=> {
-    try { 
-      noBtn.style.opacity = '0';
-      noBtn.style.transform = 'scale(0.9)';
-      setTimeout(() => {
-        noBtn.style.display = 'none';
-      }, 300);
-    } catch(e){}
-  }, 400);
+  if (noBtn) {
+    setTimeout(()=> {
+      try { 
+        noBtn.style.opacity = '0';
+        noBtn.style.transform = 'scale(0.9)';
+        setTimeout(() => {
+          if (noBtn) noBtn.style.display = 'none';
+        }, 300);
+      } catch(e){}
+    }, 400);
+  }
   
   // clear clones and their listeners
   document.querySelectorAll('.clone').forEach(n=> {
     const listener = cloneListeners.get(n);
-    if (listener) window.removeEventListener('mousemove', listener);
+    if (listener) {
+      window.removeEventListener('mousemove', listener);
+      window.removeEventListener('touchmove', listener);
+    }
     cloneListeners.delete(n);
     n.style.opacity = '0';
     setTimeout(() => {
@@ -663,6 +805,7 @@ function accept() {
 
 /* ---------- catPoke: single controlled reaction ---------- */
 function catPokeHandler() {
+  if (!catContainer) return; // Safety check
   const nowTs = now();
   if (nowTs - STATE.lastPokeAt < CONFIG.POKE_COOLDOWN_MS) {
     // ignore rapid repeated pokes (cooldown)
@@ -677,7 +820,7 @@ function catPokeHandler() {
   if (catSvg) {
     catSvg.style.transform = 'scale(0.95) rotate(-5deg)';
     setTimeout(() => {
-      catSvg.style.transform = 'scale(1) rotate(0deg)';
+      if (catSvg && catSvg.style) catSvg.style.transform = 'scale(1) rotate(0deg)';
     }, 150);
   }
   
@@ -687,7 +830,7 @@ function catPokeHandler() {
 
 /* ---------- Misbehavior when clicking/hovering No ---------- */
 function onNoInteracted() {
-  if (STATE.accepted) return;
+  if (STATE.accepted || !noBtn) return; // Safety check
   STATE.attempts++;
   // Just move the button - no pranks, no clones
   moveNoButtonRandomly();
@@ -699,10 +842,13 @@ function onNoInteracted() {
 let spinnerTimer = null;
 let spinnerOverlay = null;
 function showSpinnerPrank() {
-  // prevent multiple spinners
-  if (spinnerOverlay) return;
-  
+  // prevent multiple spinners - clean up old one first
+  if (spinnerOverlay) {
+    try { spinnerOverlay.remove(); } catch(e){}
+    spinnerOverlay = null;
+  }
   clearTimeout(spinnerTimer);
+  
   spinnerOverlay = document.createElement('div');
   spinnerOverlay.className = 'overlay';
   spinnerOverlay.style.display = 'grid';
@@ -711,17 +857,25 @@ function showSpinnerPrank() {
     <div style="font-weight:800;margin-bottom:8px">Processing your answer...</div>
     <div style="height:8px"></div><div style="font-size:12px;color:#666">Please wait...</div>
   </div>`;
-  document.body.appendChild(spinnerOverlay);
+  
+  if (document.body) {
+    try {
+      document.body.appendChild(spinnerOverlay);
+    } catch(e) {
+      console.error('Failed to append spinner:', e);
+      return;
+    }
+  }
 
   spinnerTimer = setTimeout(()=> {
     // flip to ERROR & remove
-    if (spinnerOverlay) {
+    if (spinnerOverlay && spinnerOverlay.parentNode) {
       try { 
         spinnerOverlay.querySelector('.modal').innerHTML = `<div style="font-weight:900;color:#c94">ERROR: You meant YES — retrying...</div>`; 
       } catch(e){}
       pop();
       setTimeout(()=> { 
-        try { if (spinnerOverlay) spinnerOverlay.remove(); } catch(e){}
+        try { if (spinnerOverlay && spinnerOverlay.parentNode) spinnerOverlay.remove(); } catch(e){}
         spinnerOverlay = null;
       }, 820);
     }
@@ -731,27 +885,45 @@ function showSpinnerPrank() {
 
 /* showCat (shows cat in corner) */
 function showCat() {
-  if (!STATE.accepted) {
-    catContainer.style.display = 'block';
-    boing();
-  }
+  if (!catContainer || STATE.accepted) return;
+  const catSvg = catContainer.querySelector('svg');
+  if (catSvg && catSvg.style) catSvg.style.transform = 'scale(1) rotate(0deg)'; // Reset SVG state
+  catContainer.style.display = 'block';
+  boing();
 }
 
 /* hideCat (hides cat) */
 function hideCat() {
+  if (!catContainer) return;
+  const catSvg = catContainer.querySelector('svg');
+  if (catSvg && catSvg.style) catSvg.style.transform = 'scale(1) rotate(0deg)'; // Reset SVG state
   catContainer.style.display = 'none';
 }
 
 /* ---------- Reset / cleanup ---------- */
 function clearAllTimers() {
-  for (const t of Array.from(TIMERS)) {
+  for (const t of TIMERS) {
     try { clearTimeout(t); } catch(e){}
-    TIMERS.delete(t);
   }
+  TIMERS.clear();
 }
 function resetAll() {
   // clear timers
   clearAllTimers();
+  
+  // Remove old keyboard listeners to prevent accumulation
+  removeKeyboardListeners();
+  
+  // Remove cat button listeners to prevent accumulation
+  if (catCuddle && catButtonListeners.cuddle) {
+    catCuddle.removeEventListener('click', catButtonListeners.cuddle);
+  }
+  if (catPoke && catButtonListeners.poke) {
+    catPoke.removeEventListener('click', catButtonListeners.poke);
+  }
+  if (catClose && catButtonListeners.close) {
+    catClose.removeEventListener('click', catButtonListeners.close);
+  }
   
   // clear spinner overlay reference
   if (spinnerOverlay) {
@@ -766,7 +938,10 @@ function resetAll() {
   // remove clones and clean up their listeners
   document.querySelectorAll('.clone').forEach(n => {
     const listener = cloneListeners.get(n);
-    if (listener) window.removeEventListener('mousemove', listener);
+    if (listener) {
+      window.removeEventListener('mousemove', listener);
+      window.removeEventListener('touchmove', listener);
+    }
     cloneListeners.delete(n);
     n.remove();
   });
@@ -776,72 +951,167 @@ function resetAll() {
   
   // hide cat
   hideCat();
+  if (catContainer) {
+    const catSvg = catContainer.querySelector('svg');
+    if (catSvg && catSvg.style) catSvg.style.transform = 'scale(1) rotate(0deg)'; // Reset SVG state
+  }
   
   // restore noBtn with smooth animation
-  noBtn.style.display = '';
-  noBtn.style.position = 'relative';
-  noBtn.style.left = ''; 
-  noBtn.style.top = ''; 
-  noBtn.style.transform = '';
-  noBtn.style.opacity = '1';
+  if (noBtn) {
+    noBtn.style.display = '';
+    noBtn.style.position = 'relative';
+    noBtn.style.left = ''; 
+    noBtn.style.top = ''; 
+    noBtn.style.transform = '';
+    noBtn.style.opacity = '1';
+  }
   
   // reset state
   STATE.accepted = false;
+  STATE.yesBtnClicked = false; // reset debounce flag
   STATE.attempts = 0;
   STATE.lastPokeAt = 0;
   STATE.clonesActive = 0;
   clonesCount = 0;
-  qEl.textContent = 'Will you be my Valentine? ❤️';
-  qEl.style.animation = 'none';
-  qEl.style.transform = '';
-  subtitle.textContent = 'Click Yes if you mean it. Click No to witness mischief.';
-  subtitle.style.animation = 'none';
-  subtitle.style.opacity = '1';
-  subtitle.style.transform = '';
+  if (qEl) {
+    qEl.textContent = 'Will you be my Valentine? ❤️';
+    qEl.style.animation = 'none';
+    qEl.style.transform = '';
+    qEl.style.opacity = '1'; // Ensure visible
+  }
+  if (subtitle) {
+    subtitle.textContent = 'Click Yes if you mean it. Click No to witness mischief.';
+    subtitle.style.animation = 'none';
+    subtitle.style.opacity = '1';
+    subtitle.style.transform = '';
+  }
   
   // stop audio context if present (do not "close" — just suspend)
-  try { if (audioCtx && audioCtx.state !== 'suspended') audioCtx.suspend().catch(()=>{}); } catch(e){}
+  try { 
+    if (audioCtx && audioCtx.state === 'running') {
+      audioCtx.suspend().catch(()=>{});
+    }
+  } catch(e){}
+  
+  // Re-attach keyboard listeners
+  attachKeyboardListeners();
+  
+  // Re-attach cat button listeners
+  if (catCuddle && catButtonListeners.cuddle) {
+    catCuddle.addEventListener('click', catButtonListeners.cuddle);
+  }
+  if (catPoke && catButtonListeners.poke) {
+    catPoke.addEventListener('click', catButtonListeners.poke);
+  }
+  if (catClose && catButtonListeners.close) {
+    catClose.addEventListener('click', catButtonListeners.close);
+  }
+  
+  // Re-enable yes button
+  if (yesBtn) {
+    yesBtn.disabled = false;
+  }
 }
 
 /* ---------- Event wiring ---------- */
 /* No button: hover & click */
-noBtn.addEventListener('mouseover', onNoInteracted);
-noBtn.addEventListener('click', (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  onNoInteracted();
-});
+if (noBtn) {
+  noBtn.addEventListener('mouseover', onNoInteracted);
+  noBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onNoInteracted();
+  });
+}
 
 /* Yes button: idempotent accept */
-yesBtn.addEventListener('click', () => {
-  accept();
-});
+if (yesBtn) {
+  yesBtn.addEventListener('click', () => {
+    accept();
+  });
+}
 
-/* Cat actions */
-$('#catCuddle').addEventListener('click', () => {
-  hideCat(); 
-  accept();
-});
-$('#catPoke').addEventListener('click', () => {
-  catPokeHandler();
-});
-$('#catClose').addEventListener('click', () => {
-  hideCat();
-});
+/* Cat actions - tracked for cleanup */
+if (catCuddle) {
+  catButtonListeners.cuddle = () => {
+    hideCat(); 
+    accept();
+  };
+  catCuddle.addEventListener('click', catButtonListeners.cuddle);
+}
+if (catPoke) {
+  catButtonListeners.poke = () => {
+    catPokeHandler();
+  };
+  catPoke.addEventListener('click', catButtonListeners.poke);
+}
+if (catClose) {
+  catButtonListeners.close = () => {
+    hideCat();
+  };
+  catClose.addEventListener('click', catButtonListeners.close);
+}
 
 /* keyboard shortcuts */
-document.addEventListener('keydown', (ev) => {
-  const k = ev.key.toLowerCase();
-  if (k === 'y') yesBtn.click();
-  if (k === 'n') noBtn.click();
-  if (k === 'm') showCat();
-});
+let keydownHandler = null;
+function attachKeyboardListeners() {
+  if (keydownHandler) {
+    // Remove old handler if it exists
+    document.removeEventListener('keydown', keydownHandler);
+  }
+  keydownHandler = (ev) => {
+    const k = ev.key.toLowerCase();
+    
+    // Escape always resets (even after accepted)
+    if (k === 'escape') {
+      resetAll();
+      return;
+    }
+    
+    // Block Y/N after acceptance, but allow M (cat)
+    if (STATE.accepted) {
+      if (k === 'm') showCat?.();
+      return;
+    }
+    
+    // Normal shortcuts before acceptance
+    if (k === 'y') yesBtn?.click?.();
+    if (k === 'n') noBtn?.click?.();
+    if (k === 'm') showCat?.();
+  };
+  document.addEventListener('keydown', keydownHandler);
+}
+function removeKeyboardListeners() {
+  if (keydownHandler) {
+    document.removeEventListener('keydown', keydownHandler);
+    keydownHandler = null;
+  }
+}
+// Attach on initialization
+attachKeyboardListeners();
 
-/* initial friendly nudge */
-setTimeout(() => {
-  // small launch hearts to hint fun
-  launchHearts(18);
-}, 600);
+/* initial friendly nudge - only after DOM fully ready */
+function launchInitialHearts() {
+  try { 
+    if (document.body && launchHearts) {
+      launchHearts(18);
+    }
+  } catch(e){ 
+    console.error('Initial hearts error:', e); 
+  }
+}
+// Use Promise-based check for max compatibility
+Promise.resolve().then(() => {
+  if (document.readyState !== 'complete') {
+    const handler = () => {
+      launchInitialHearts();
+      document.removeEventListener('DOMContentLoaded', handler);
+    };
+    document.addEventListener('DOMContentLoaded', handler);
+  } else {
+    setTimeout(launchInitialHearts, 600);
+  }
+});
 
 /* ---------- Testing helpers exposed to console (safe) ---------- */
 window.__VAL_FIX = {
