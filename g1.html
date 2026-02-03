@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Valentine?</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #ffe6eb;
+      text-align: center;
+    }
+    .box {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    button {
+      font-size: 18px;
+      padding: 10px 20px;
+      margin: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .yes {
+      background: #ff4d6d;
+      color: white;
+    }
+    .no {
+      background: #ccc;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="box">
+    <h1 id="question">Will you be my Valentine? ❤️</h1>
+    <button class="yes" onclick="sayYes()">Yes</button>
+    <button class="no" onclick="sayNo()">No</button>
+  </div>
+
+  <script>
+    function sayNo() {
+      document.getElementById("question").innerText =
+        "Will you be my Valentine? 🥺❤️";
+    }
+
+    function sayYes() {
+      document.getElementById("question").innerText =
+        "Yayyyy!! 💖🥰 I knew it!";
+      document.querySelector(".no").style.display = "none";
+    }
+  </script>
+
+</body>
+</html>
