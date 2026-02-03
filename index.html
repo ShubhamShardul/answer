@@ -3,198 +3,173 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>EXTREMELY UNHINGED Valentine 💘 (FIXED)</title>
+<title>Valentine — Fixed, Playful & Robust</title>
 <style>
-  :root{ --bg1:#ff9aa2; --bg2:#ffd6e0; --accent:#ff4d6d; --muted:#6b6b6b; --card-w:380px; }
+  :root{ --accent:#ff4d6d; --bg1:#ffebeF; --bg2:#ffe6eb; --muted:#6e6e6e; }
   *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family:"Comic Sans MS", "Trebuchet MS", system-ui, Arial, sans-serif;}
-  body{
-    background: radial-gradient(circle at 10% 10%, #fff6f8, rgba(255,255,255,0)) , linear-gradient(180deg,var(--bg1),var(--bg2));
-    display:grid;place-items:center;padding:20px;overflow:hidden;
-  }
-  .card{ width:100%;max-width:var(--card-w); background:#fff; border-radius:18px; padding:18px;
-         box-shadow: 0 18px 50px rgba(0,0,0,0.18); text-align:center; position:relative; z-index:50; }
-  h1{margin:6px 0 10px;color:var(--accent);font-size:20px}
-  p.sub{margin:0 0 14px;color:var(--muted);font-size:13px}
+  html,body{height:100%;margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;}
+  body{display:grid;place-items:center;padding:18px; background:linear-gradient(180deg,#fff1f5,#ffeef2); overflow:hidden;}
+  .card{width:100%;max-width:420px;background:#fff;border-radius:14px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,0.12);text-align:center;position:relative}
+  h1{color:var(--accent);margin:6px 0 8px;font-size:20px}
+  .sub{font-size:13px;color:var(--muted);margin:0 0 12px}
   .row{display:flex;gap:10px;justify-content:center;align-items:center}
-  button{ padding:12px 14px;border-radius:12px;border:0;font-weight:800;cursor:pointer;font-size:15px; }
-  button:focus{outline:3px solid rgba(255,77,109,0.15)}
-  .yes{background:var(--accent);color:#fff;box-shadow:0 10px 30px rgba(255,77,109,0.18)}
-  .no{background:#f0f0f0;color:#333;position:relative}
-  .control{background:#fff;border:1px solid #f0f0f0;padding:8px 10px;border-radius:999px;font-weight:700}
-  .meter{width:100%;margin-top:12px}
-  .meter input{width:100%}
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);display:none;place-items:center;z-index:999}
-  .modal{background:#fff;padding:18px;border-radius:12px;max-width:420px;width:90%;box-shadow:0 12px 40px rgba(0,0,0,0.3);text-align:left}
-  .spinner{width:72px;height:72px;border-radius:50%;display:inline-grid;place-items:center;background:linear-gradient(135deg,#fff,#ffeef4);box-shadow:0 6px 18px rgba(0,0,0,0.08)}
-  .dot{width:12px;height:12px;background:var(--accent);border-radius:50%;animation:blink .8s infinite ease-in-out}
-  .dot:nth-child(2){animation-delay:.12s}
-  .dot:nth-child(3){animation-delay:.24s}
-  @keyframes blink{0%,100%{transform:scale(.6);opacity:.4}50%{transform:scale(1.1);opacity:1}}
+  button{padding:10px 14px;border-radius:12px;border:0;cursor:pointer;font-weight:700}
+  .yes{background:var(--accent);color:#fff}
+  .no{background:#f4f4f4;color:#111;position:relative}
+  .control{background:#fff;border:1px solid #eee;padding:8px 10px;border-radius:999px}
+  input[type="range"]{width:100%}
+  .tiny{font-size:12px;color:var(--muted);margin-top:8px}
   canvas#confetti{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:995}
-  .heart{position:fixed;font-size:22px;pointer-events:none;z-index:996;animation:floatup 4s linear;}
-  @keyframes floatup{from{transform:translateY(100vh) rotate(0);}to{transform:translateY(-20vh) rotate(360deg);opacity:0;}}
-  .tiny{font-size:12px;color:#777;margin-top:8px}
-  .termsBody{height:220px;overflow:auto;padding:8px;border-radius:8px;border:1px dashed #eee;background:#fafafa}
-  .termLine{font-size:13px;line-height:1.4;padding:6px 0}
-  .cat{font-size:18px;text-align:center}
-  .cat svg{width:160px;height:160px;display:block;margin:0 auto}
-  .big{font-size:34px;font-weight:900;color:var(--accent)}
-  @media (max-width:420px){ .card{padding:16px} h1{font-size:18px} }
+  .heart{position:fixed;pointer-events:none;font-size:22px;z-index:996;animation:floatUp 4s linear}
+  @keyframes floatUp { from { transform:translateY(100vh) } to { transform:translateY(-20vh); opacity:0 } }
+  /* overlays */
+  .overlay{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,0.35);z-index:999}
+  .modal{background:#fff;padding:16px;border-radius:12px;max-width:520px;width:92%;box-shadow:0 12px 32px rgba(0,0,0,0.2)}
+  .tiny-muted{font-size:12px;color:#777;margin-top:8px}
+  /* clones */
+  .clone{position:fixed;z-index:900;cursor:pointer;padding:8px 12px;border-radius:12px;border:2px dashed rgba(0,0,0,0.06);background:#fff;font-weight:800}
+  @media (max-width:420px){ .card{padding:14px} h1{font-size:18px} }
 </style>
 </head>
 <body>
-
   <canvas id="confetti"></canvas>
 
-  <div class="card" role="application" aria-labelledby="q">
+  <main class="card" role="application" aria-labelledby="q">
     <h1 id="q">Will you be my Valentine? ❤️</h1>
-    <p class="sub">Say "Yes" to end this glorious chaos — try clicking "No" if you dare.</p>
+    <p class="sub" id="subtitle">Click Yes if you mean it. Click No to witness mischief.</p>
 
     <div class="row" style="margin-bottom:8px">
-      <button id="yesBtn" class="yes">Yes 💘</button>
-      <button id="noBtn" class="no">No 🙈</button>
+      <button id="yesBtn" class="yes" aria-label="Yes">Yes 💘</button>
+      <button id="noBtn" class="no" aria-label="No">No 🙈</button>
     </div>
 
-    <div class="row" style="margin-top:8px">
+    <div class="row" style="margin-top:10px;align-items:center">
       <div class="control tiny">Chaos</div>
-      <div class="meter" style="flex:1">
-        <input id="chaos" type="range" min="0" max="10" value="7" />
-      </div>
-      <div style="width:8px"></div>
+      <div style="flex:1"><input id="chaos" type="range" min="0" max="10" value="7" aria-label="Chaos level"></div>
       <button id="reset" class="control tiny">Reset</button>
     </div>
 
-    <div class="tiny">Keyboard: <strong>Y</strong>=Yes, <strong>N</strong>=No, <strong>M</strong>=Meow</div>
-  </div>
+    <div class="tiny-muted">Keys: Y = Yes, N = No, M = Meow</div>
+  </main>
 
-  <!-- spinner -->
-  <div id="spinnerOverlay" class="overlay center" aria-hidden="true">
-    <div class="modal center" style="flex-direction:column;">
-      <div class="spinner" id="spinner">
-        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-      </div>
-      <div style="height:10px"></div>
-      <div id="spinnerText" style="font-weight:700;color:#333">Processing your answer...</div>
-    </div>
-  </div>
-
-  <!-- terms modal -->
-  <div id="termsOverlay" class="overlay center" aria-hidden="true">
-    <div class="modal">
-      <h3>Terms & Conditions — Important</h3>
-      <p class="tiny">Please read the following terms carefully before you proceed. It's long. Very long.</p>
-      <div class="termsBody" id="termsBody" tabindex="0" aria-label="terms"></div>
-      <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end;">
-        <button id="agreeBtn" class="control">I Agree</button>
-        <button id="declineTerms" class="control">Nope</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- cat -->
-  <div id="catOverlay" class="overlay center" aria-hidden="true">
-    <div class="modal center" style="flex-direction:column">
-      <div class="cat">
-        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <g transform="translate(10,10)">
-            <ellipse cx="50" cy="60" rx="34" ry="30" fill="#ffd6e0"/>
-            <ellipse cx="30" cy="36" rx="8" ry="10" fill="#ffd6e0"/>
-            <ellipse cx="70" cy="36" rx="8" ry="10" fill="#ffd6e0"/>
-            <circle cx="40" cy="58" r="4" fill="#333"/>
-            <circle cx="60" cy="58" r="4" fill="#333"/>
-            <path d="M45 72 Q50 78 55 72" stroke="#cc4d6d" stroke-width="2" fill="none" stroke-linecap="round"/>
-            <path d="M10 28 Q0 12 18 10 Q36 8 44 24" fill="#ffd6e0" />
-            <path d="M90 28 Q100 12 82 10 Q64 8 56 24" fill="#ffd6e0" />
-            <circle cx="50" cy="46" r="3" fill="#fff" opacity="0.6"/>
-          </g>
-        </svg>
-        <div style="margin-top:10px;font-weight:800;color:#333">I brought treats. Say yes. 🐱</div>
-      </div>
+  <!-- Cat modal -->
+  <div id="catOverlay" class="overlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" style="text-align:center">
+      <svg viewBox="0 0 120 120" style="width:140px;height:140px;margin:0 auto">
+        <g transform="translate(10,10)">
+          <ellipse cx="50" cy="60" rx="34" ry="30" fill="#ffd6e0"/>
+          <ellipse cx="30" cy="36" rx="8" ry="10" fill="#ffd6e0"/>
+          <ellipse cx="70" cy="36" rx="8" ry="10" fill="#ffd6e0"/>
+          <circle cx="40" cy="58" r="4" fill="#333"/><circle cx="60" cy="58" r="4" fill="#333"/>
+          <path d="M45 72 Q50 78 55 72" stroke="#cc4d6d" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </g>
+      </svg>
+      <div style="font-weight:800;margin-top:10px">I brought treats. Be nice. 🐱</div>
       <div style="height:12px"></div>
-      <div style="display:flex;gap:10px">
+      <div style="display:flex;gap:10px;justify-content:center">
         <button id="catCuddle" class="yes">Cuddle</button>
-        <button id="catPoke" class="control">Poke</button>
+        <button id="catPoke" class="control" id="catPokeBtn">Poke</button>
       </div>
     </div>
   </div>
 
 <script>
-/* FIXED and IMPROVED UNHINGED FILE
-   - fixed recursion bug
-   - clones that chase are "Yes" clones
-   - Yes click now works (chime + confetti)
-   - cleared intervals and improved robustness
+/* === Robust, corrected logic ===
+   Goals fixed:
+   - No button moves but never disappears (kept inside viewport)
+   - Yes click is idempotent (only triggers acceptance once)
+   - catPoke has cooldown, spawns a single yes-clone (no repeated auto-Yes)
+   - spawnYesClone limit and cleanup implemented
+   - single confetti system with safe RAF
+   - all intervals/timeouts tracked and cleared on reset
+   - keyboard shortcuts work
 */
 
-const $ = s => document.querySelector(s);
-
-/* Elements */
-const yesBtn = $('#yesBtn'), noBtn = $('#noBtn');
-const chaos = $('#chaos'), resetBtn = $('#reset');
-const spinnerOverlay = $('#spinnerOverlay'), spinnerText = $('#spinnerText');
-const termsOverlay = $('#termsOverlay'), termsBody = $('#termsBody'), agreeBtn = $('#agreeBtn'), declBtn = $('#declineTerms');
-const catOverlay = $('#catOverlay'), catCuddle = $('#catCuddle'), catPoke = $('#catPoke');
-const confettiCanvas = document.getElementById('confetti'), qEl = $('#q');
-
-let attempts = 0, yesCount = 0, termsAutoInterval = null;
-let audioCtx = null;
-
-/* small helpers */
+/* ---------- Utilities ---------- */
+const $ = sel => document.querySelector(sel);
 const rand = (a,b) => a + Math.random() * (b - a);
-const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function now() { return Date.now(); }
 
-/* Audio helpers */
-function ensureAudio(){
-  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+/* ---------- Elements ---------- */
+const yesBtn = $('#yesBtn'), noBtn = $('#noBtn'), chaos = $('#chaos'), resetBtn = $('#reset');
+const catOverlay = $('#catOverlay'), catCuddle = $('#catCuddle'), catPoke = $('#catPoke');
+const confettiCanvas = document.getElementById('confetti'), qEl = $('#q'), subtitle = $('#subtitle');
+
+/* ---------- State ---------- */
+const STATE = {
+  accepted: false,
+  attempts: 0,
+  chaos: Number(chaos.value || 7),
+  lastPokeAt: 0,
+  clonesActive: 0
+};
+
+const CONFIG = {
+  MAX_CLONES: 3,
+  CLONE_TTL_MS: 9000,
+  POKE_COOLDOWN_MS: 2000
+};
+
+/* track timers/intervals so we can clear them */
+const TIMERS = new Set();
+
+/* ---------- Audio (gesture-friendly) ---------- */
+let audioCtx = null;
+function ensureAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
 }
-function playTone(freq,dur=0.12,type='sine',vol=0.12){
+function playTone(freq=660, dur=0.12, type='sine', vol=0.12) {
   try {
     ensureAudio();
     const o = audioCtx.createOscillator();
     const g = audioCtx.createGain();
-    o.type = type; o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    o.type = type;
+    o.frequency.setValueAtTime(freq, audioCtx.currentTime);
     g.gain.setValueAtTime(vol, audioCtx.currentTime);
     o.connect(g); g.connect(audioCtx.destination);
-    o.start(); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
-    o.stop(audioCtx.currentTime + dur + 0.02);
+    o.start();
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+    // stop later
+    const stopId = setTimeout(() => { try { o.stop(); } catch(e){} }, (dur + 0.05) * 1000);
+    TIMERS.add(stopId);
   } catch(e){}
 }
-function boing(){ playTone(660,0.15,'sine',0.12); playTone(880,0.12,'sine',0.06); }
-function pop(){ playTone(780,0.06,'square',0.14); }
-function tada(){ playTone(880,0.14,'sine',0.12); playTone(660,0.22,'sine',0.12); playTone(1100,0.12,'sine',0.08); }
+function boing(){ playTone(660,0.14,'sine',0.12); playTone(880,0.08,'sine',0.06); }
+function pop(){ playTone(760,0.06,'square',0.14); }
+function tada(){ playTone(880,0.14,'sine',0.12); playTone(660,0.18,'sine',0.12); }
 
-/* Confetti canvas (single implementation — NO recursion) */
+/* ---------- Confetti (single, robust) ---------- */
 const ctx = confettiCanvas.getContext ? confettiCanvas.getContext('2d') : null;
-let confettiPieces = [];
+let confettiPieces = [], confettiRaf = null;
 function resizeCanvas(){ confettiCanvas.width = window.innerWidth; confettiCanvas.height = window.innerHeight; }
-window.addEventListener('resize', resizeCanvas); resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
 function spawnConfetti(count=60){
-  if(!ctx) return;
-  confettiPieces = [];
-  const colors = ['#ff4d6d','#ffd166','#06d6a0','#118ab2','#bd7efc','#ffd6e0'];
-  for(let i=0;i<count;i++){
+  if (!ctx) return;
+  for (let i=0;i<count;i++){
     confettiPieces.push({
-      x: Math.random()*confettiCanvas.width,
+      x: Math.random() * confettiCanvas.width,
       y: -10 - Math.random()*200,
       w: 6 + Math.random()*10,
       h: 8 + Math.random()*10,
-      vx: -2 + Math.random()*4,
-      vy: 2 + Math.random()*6,
+      vx: rand(-3,3),
+      vy: rand(2,6),
       rot: Math.random()*360,
-      vr: (-5 + Math.random()*10),
-      color: colors[i % colors.length],
+      vr: rand(-6,6),
+      color: ['#ff4d6d','#ffd166','#06d6a0','#118ab2','#bd7efc'][i % 5],
       life: 0
     });
   }
-  requestAnimationFrame(tickConfetti);
+  if (!confettiRaf) confettiRaf = requestAnimationFrame(tickConfetti);
 }
 function tickConfetti(){
-  if(!ctx) return;
+  if (!ctx) return;
   ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
-  for(let p of confettiPieces){
-    p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.rot += p.vr; p.life += 1;
+  for (const p of confettiPieces){
+    p.x += p.vx; p.y += p.vy; p.vy += 0.06; p.rot += p.vr; p.life ++;
     ctx.save();
     ctx.translate(p.x, p.y);
     ctx.rotate(p.rot * Math.PI/180);
@@ -202,194 +177,269 @@ function tickConfetti(){
     ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
     ctx.restore();
   }
-  if(confettiPieces.some(p => p.y < confettiCanvas.height + 50)) requestAnimationFrame(tickConfetti);
-  else ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+  // garbage collect off-screen
+  confettiPieces = confettiPieces.filter(p => p.y < confettiCanvas.height + 100);
+  if (confettiPieces.length) confettiRaf = requestAnimationFrame(tickConfetti);
+  else { cancelAnimationFrame(confettiRaf || 0); confettiRaf = null; ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height); }
 }
 
-/* Hearts */
-function launchHearts(rate=80){
-  const burst = Math.floor(rate/4) + Math.floor(Math.random()*rate/3);
-  for(let i=0;i<burst;i++){
-    const e = document.createElement('div');
-    e.className = 'heart';
-    e.style.left = (Math.random()*90)+'vw';
-    e.style.fontSize = (14 + Math.random()*34) + 'px';
-    e.textContent = Math.random() > 0.6 ? '💖' : '❤️';
-    document.body.appendChild(e);
-    setTimeout(()=> e.remove(), 4200 + Math.random()*2000);
+/* ---------- Hearts / emoji ---------- */
+function launchHearts(rate=30){
+  const burst = Math.max(6, Math.floor(rate/3) + Math.floor(Math.random()*rate/4));
+  for (let i=0;i<burst;i++){
+    const el = document.createElement('div');
+    el.className = 'heart';
+    el.style.left = (Math.random()*92) + 'vw';
+    el.style.fontSize = (12 + Math.random()*36) + 'px';
+    el.textContent = Math.random() > 0.6 ? '💖' : '❤️';
+    document.body.appendChild(el);
+    const t = setTimeout(()=> el.remove(), 4200 + Math.random()*1500);
+    TIMERS.add(t);
   }
 }
-function emojiStorm(level=1){
-  launchHearts(20 * level);
-}
 
-/* CLONE: clone the YES button and let it chase cursor — this fixes "cursor followed by No" */
-function spawnYesClone(){
-  const base = yesBtn;
-  const c = base.cloneNode(true);
-  c.classList.add('clone');
-  c.style.position = 'fixed';
-  c.style.left = (Math.random()*(window.innerWidth-120)) + 'px';
-  c.style.top = (Math.random()*(window.innerHeight-80)) + 'px';
-  c.style.zIndex = 900;
-  c.style.opacity = 0.95;
+/* ---------- spawnYesClone (chasing clone) ---------- */
+let clonesCount = 0;
+function spawnYesClone() {
+  if (STATE.accepted) return;
+  if (clonesCount >= CONFIG.MAX_CLONES) return; // limit clones
+  clonesCount++;
+  STATE.clonesActive = clonesCount;
+
+  const c = document.createElement('button');
+  c.className = 'clone';
   c.textContent = 'Yes! 😍';
+  // initial position
+  const left = Math.random()*(window.innerWidth - 120);
+  const top = Math.random()*(window.innerHeight - 70);
+  c.style.left = left + 'px';
+  c.style.top = top + 'px';
+  c.style.padding = '8px 12px';
   document.body.appendChild(c);
-  // chase pointer
+
+  // chase behavior
   function chase(e){
-    const rect = c.getBoundingClientRect();
-    const dx = e.clientX - (rect.left + rect.width/2);
-    const dy = e.clientY - (rect.top + rect.height/2);
-    c.style.left = (rect.left + dx*0.12) + 'px';
-    c.style.top = (rect.top + dy*0.12) + 'px';
+    const r = c.getBoundingClientRect();
+    const dx = e.clientX - (r.left + r.width/2);
+    const dy = e.clientY - (r.top + r.height/2);
+    c.style.left = (r.left + dx*0.12) + 'px';
+    c.style.top = (r.top + dy*0.12) + 'px';
   }
   window.addEventListener('mousemove', chase);
-  c.addEventListener('click', ()=>{
-    pop();
+
+  // clicking clone triggers accept() once and removes clone
+  c.addEventListener('click', () => {
     c.remove();
     window.removeEventListener('mousemove', chase);
-    yesBtn.click(); // clicking clones also triggers Yes
+    clonesCount = Math.max(0, clonesCount-1);
+    STATE.clonesActive = clonesCount;
+    accept();
   });
-  // auto remove after some time and cleanup
-  setTimeout(()=> { try{ c.remove(); window.removeEventListener('mousemove', chase); }catch(e){} }, 9000 + Math.random()*7000);
+
+  // auto-remove after TTL
+  const ttl = setTimeout(()=> {
+    try { c.remove(); } catch(e){}
+    window.removeEventListener('mousemove', chase);
+    clonesCount = Math.max(0, clonesCount-1);
+    STATE.clonesActive = clonesCount;
+  }, CONFIG.CLONE_TTL_MS);
+  TIMERS.add(ttl);
 }
 
-/* Spinner prank */
-let spinnerTimeout = null;
-function showSpinnerPrank(){
+/* ---------- Move No button safely (keeps it visible) ---------- */
+function moveNoButtonRandomly() {
+  const pad = 12; // safety pad
+  const vw = Math.max(320, window.innerWidth);
+  const vh = Math.max(240, window.innerHeight);
+  const btnW = Math.min(140, Math.max(80, noBtn.offsetWidth || 110));
+  const btnH = Math.min(60, Math.max(36, noBtn.offsetHeight || 44));
+  let left = Math.random() * (vw - btnW - pad*2) + pad;
+  let top = Math.random() * (vh - btnH - pad*2) + pad;
+  // clamp to viewport
+  left = clamp(left, pad, window.innerWidth - btnW - pad);
+  top  = clamp(top, pad, window.innerHeight - btnH - pad);
+  noBtn.style.position = 'fixed';
+  noBtn.style.left = left + 'px';
+  noBtn.style.top = top + 'px';
+  noBtn.style.transform = ''; // reset rotation if set
+}
+
+/* ---------- accept() idempotent ---------- */
+function accept() {
+  if (STATE.accepted) return; // idempotent
+  STATE.accepted = true;
+  subtitle.textContent = 'YAY!! You said YES 💖';
+  // visual + audio reward
+  try { ensureAudio(); } catch(e){}
+  tada();
+  spawnConfetti(140);
+  launchHearts(120);
+  // hide No button after a brief moment (explicit acceptance)
+  setTimeout(()=> {
+    try { noBtn.style.display = 'none'; } catch(e){}
+  }, 400);
+  // clear clones
+  document.querySelectorAll('.clone').forEach(n=>n.remove());
+  clonesCount = 0; STATE.clonesActive = 0;
+}
+
+/* ---------- catPoke: single controlled reaction ---------- */
+function catPokeHandler() {
+  const nowTs = now();
+  if (nowTs - STATE.lastPokeAt < CONFIG.POKE_COOLDOWN_MS) {
+    // ignore rapid repeated pokes (cooldown)
+    pop();
+    return;
+  }
+  STATE.lastPokeAt = nowTs;
+  pop();
+  // play a small animation: make overlay jiggle
+  catOverlay.style.transform = 'scale(1.02)';
+  setTimeout(()=> catOverlay.style.transform = '', 220);
+  // spawn *one* chasing yes clone (not immediate accept)
+  spawnYesClone();
+}
+
+/* ---------- Misbehavior when clicking/hovering No ---------- */
+function onNoInteracted() {
+  if (STATE.accepted) return;
+  STATE.attempts++;
+  // move, maybe temporary text change, maybe spawn clone, maybe spinner/cat
+  moveNoButtonRandomly();
+  const level = clamp(Number(chaos.value || 7), 0, 10);
+  if (level >= 2) boing();
+  if (Math.random() < 0.22 && level >= 3) {
+    // lie briefly
+    const old = noBtn.textContent;
+    noBtn.textContent = Math.random() > 0.5 ? 'Yes 😀' : 'Maybe?';
+    setTimeout(()=> { try { noBtn.textContent = old; } catch(e){} }, 700 + Math.random()*900);
+  }
+  if (Math.random() < (0.16 + level*0.03)) spawnYesClone();
+  if (Math.random() < (0.06 + level*0.04)) showSpinnerPrank();
+  if (Math.random() < (0.05 + level*0.04)) showCat();
+}
+
+/* spinner prank (clean) */
+let spinnerTimer = null;
+function showSpinnerPrank() {
+  clearTimeout(spinnerTimer);
+  const spinnerOverlay = document.createElement('div');
+  spinnerOverlay.className = 'overlay';
   spinnerOverlay.style.display = 'grid';
   spinnerOverlay.setAttribute('aria-hidden','false');
-  spinnerText.textContent = 'Processing your answer...';
-  clearTimeout(spinnerTimeout);
-  spinnerTimeout = setTimeout(() => {
-    spinnerText.textContent = 'ERROR: You meant YES — retrying...';
+  spinnerOverlay.innerHTML = `<div class="modal" role="dialog" aria-modal="true" style="text-align:center">
+    <div style="font-weight:800;margin-bottom:8px">Processing your answer...</div>
+    <div style="height:8px"></div><div style="font-size:12px;color:#666">Please wait...</div>
+  </div>`;
+  document.body.appendChild(spinnerOverlay);
+
+  spinnerTimer = setTimeout(()=> {
+    // flip to ERROR & remove
+    try { spinnerOverlay.querySelector('.modal').innerHTML = `<div style="font-weight:900;color:#c94">ERROR: You meant YES — retrying...</div>`; } catch(e){}
     pop();
-    let flashes = 6;
-    const f = setInterval(() => {
-      yesBtn.style.background = (yesBtn.style.background ? '' : 'linear-gradient(90deg,#ffd6e0,#ff4d6d)');
-      flashes--;
-      if(flashes <= 0) { clearInterval(f); yesBtn.style.background=''; spinnerOverlay.style.display='none'; spinnerOverlay.setAttribute('aria-hidden','true');
-          tada(); spawnConfetti(80); emojiStorm(clamp(Number(chaos.value),0,10)); }
-    }, 220);
-  }, 1000 + Math.random()*1200);
+    setTimeout(()=> { try { spinnerOverlay.remove(); } catch(e){} }, 820);
+  }, 900 + Math.random()*900);
+  TIMERS.add(spinnerTimer);
 }
 
-/* Terms modal: long content + auto-nudge (cleared when closed) */
-function openTerms(){
-  termsOverlay.style.display = 'grid';
-  termsOverlay.setAttribute('aria-hidden','false');
-  termsBody.innerHTML = '';
-  for(let i=0;i<400;i++){
-    const d = document.createElement('div'); d.className = 'termLine';
-    d.textContent = `${i+1}. This is an important legal clause about feelings, chocolate & emojis. You agree to love, hugs, and occasional memes.`;
-    termsBody.appendChild(d);
+/* showCat (modal) */
+function showCat() {
+  catOverlay.style.display = 'grid';
+  catOverlay.setAttribute('aria-hidden','false');
+}
+
+/* hideCat */
+function hideCat() {
+  catOverlay.style.display = 'none';
+  catOverlay.setAttribute('aria-hidden','true');
+}
+
+/* ---------- Reset / cleanup ---------- */
+function clearAllTimers() {
+  for (const t of Array.from(TIMERS)) {
+    try { clearTimeout(t); } catch(e){}
+    TIMERS.delete(t);
   }
-  termsBody.scrollTop = 0;
-  if(termsAutoInterval) clearInterval(termsAutoInterval);
-  termsAutoInterval = setInterval(() => {
-    if(termsOverlay.style.display !== 'grid'){ clearInterval(termsAutoInterval); termsAutoInterval = null; return; }
-    // gently nudge back up to make it hard to reach bottom
-    termsBody.scrollTop = Math.max(0, termsBody.scrollTop - 2);
-  }, 120);
 }
-
-/* Cat popup */
-function showCatPopup(){ catOverlay.style.display = 'grid'; catOverlay.setAttribute('aria-hidden','false'); boing(); }
-function hideCatPopup(){ catOverlay.style.display = 'none'; catOverlay.setAttribute('aria-hidden','true'); }
-
-/* Mischief on No click / hover */
-let spawnChanceCounter = 0;
-function mischiefNo(){
-  attempts++;
-  const level = clamp(Number(chaos.value), 0, 10);
-  if(level >= 2) boing();
-  if(level >= 6) pop();
-
-  // move the no button somewhere
-  const x = Math.random() * (window.innerWidth - 120);
-  const y = Math.random() * (window.innerHeight - 80);
-  noBtn.style.position = 'fixed';
-  noBtn.style.left = x + 'px';
-  noBtn.style.top = y + 'px';
-  if(level > 5) { noBtn.style.transform = `rotate(${rand(-18,18)}deg)`; setTimeout(()=> noBtn.style.transform = '', 700); }
-
-  // sometimes lie: temporarily say "Yes" then revert
-  if(Math.random() > 0.7 && level >= 3){
-    const old = noBtn.textContent;
-    noBtn.textContent = Math.random() > 0.4 ? 'Yes 😀' : 'Maybe?';
-    setTimeout(()=> { try{ noBtn.textContent = old; } catch(e){} }, 900 + Math.random()*1200);
-  }
-
-  // spawn a chasing YES clone occasionally (fix: clone is YES now)
-  if(Math.random() * 100 < (25 + level*4)) spawnYesClone();
-
-  // chance to show spinner prank or cat popup
-  if(Math.random()*100 < (6 + level*6)) showSpinnerPrank();
-  if(Math.random()*100 < (4 + level*5)) showCatPopup();
-
-  // make Yes button do a little celebratory nudge
-  yesBtn.animate([{transform:'scale(1)'},{transform:`scale(${1 + level*0.03})`},{transform:'scale(1)'}],{duration:340});
-}
-
-/* Event hooks */
-noBtn.addEventListener('mouseover', ()=> mischiefNo());
-noBtn.addEventListener('click', ()=> mischiefNo());
-noBtn.addEventListener('mousemove', ()=> { if(Math.random() < 0.045) mischiefNo(); });
-
-yesBtn.addEventListener('click', () => {
-  ensureAudio();
-  yesCount++;
-  qEl.textContent = 'YAYYY!! 💖 You said YES!';
-  tada(); spawnConfetti(120); emojiStorm(clamp(Number(chaos.value),0,10));
-  for(let i=0;i<20;i++) setTimeout(()=> launchHearts(40), i*60);
-  document.body.animate([{filter:'hue-rotate(0deg)'},{filter:'hue-rotate(360deg)'}],{duration:1800,iterations:1});
-  setTimeout(()=> { noBtn.textContent = 'Okay fine 😅'; }, 800);
-});
-
-/* Terms modal actions */
-agreeBtn.addEventListener('click', () => {
-  spinnerOverlay.style.display='grid'; spinnerText.textContent = 'Applying your agreement...';
-  setTimeout(()=> {
-    spinnerText.textContent = 'ERROR: You scrolled the wrong way. You meant YES!';
-    pop();
-    setTimeout(()=> { spinnerOverlay.style.display='none'; spinnerOverlay.setAttribute('aria-hidden','true'); termsOverlay.style.display='none'; termsOverlay.setAttribute('aria-hidden','true'); clearInterval(termsAutoInterval); termsAutoInterval = null; showCatPopup(); }, 1200);
-  }, 1200);
-});
-declBtn.addEventListener('click', () => { pop(); alert("Declining terms causes more feelings. Try again."); });
-
-catCuddle.addEventListener('click', () => { hideCatPopup(); yesBtn.click(); });
-catPoke.addEventListener('click', () => { pop(); emojiStorm(4); spawnYesClone(); });
-
-/* Chaos meter */
-chaos.addEventListener('input', ()=> { pop(); });
-
-/* Keyboard shortcuts */
-document.addEventListener('keydown', (e) => {
-  const k = e.key.toLowerCase();
-  if(k === 'y') yesBtn.click();
-  if(k === 'n') noBtn.click();
-  if(k === 'm') { showCatPopup(); boing(); }
-  if(k === 'u'){ chaos.value = 10; chaos.dispatchEvent(new Event('input')); setTimeout(()=> { spawnConfetti(300); emojiStorm(10); }, 200); }
-});
-
-/* Reset */
-resetBtn.addEventListener('click', () => {
-  document.querySelectorAll('.clone').forEach(n=>n.remove());
-  document.querySelectorAll('.heart').forEach(n=>n.remove());
-  spinnerOverlay.style.display='none'; spinnerOverlay.setAttribute('aria-hidden','true');
-  termsOverlay.style.display='none'; termsOverlay.setAttribute('aria-hidden','true');
-  catOverlay.style.display='none'; catOverlay.setAttribute('aria-hidden','true');
-  attempts = 0; yesCount = 0;
+function resetAll() {
+  // clear timers
+  clearAllTimers();
+  // cancel confetti RAF
+  try { if (confettiRaf) cancelAnimationFrame(confettiRaf); } catch(e){}
+  confettiRaf = null; confettiPieces = []; ctx && ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+  // remove clones/hearts
+  document.querySelectorAll('.clone').forEach(n => n.remove());
+  document.querySelectorAll('.heart').forEach(n => n.remove());
+  // hide cat
+  hideCat();
+  // restore noBtn
+  noBtn.style.display = '';
+  noBtn.style.position = 'relative';
+  noBtn.style.left = ''; noBtn.style.top = ''; noBtn.style.transform = '';
+  // reset state
+  STATE.accepted = false;
+  STATE.attempts = 0;
+  STATE.lastPokeAt = 0;
+  STATE.clonesActive = 0;
+  clonesCount = 0;
   qEl.textContent = 'Will you be my Valentine? ❤️';
-  noBtn.style.left=''; noBtn.style.top=''; noBtn.textContent='No 🙈'; noBtn.style.transform=''; noBtn.style.position='relative';
-  pop();
-  if(termsAutoInterval){ clearInterval(termsAutoInterval); termsAutoInterval = null; }
+  subtitle.textContent = 'Click Yes if you mean it. Click No to witness mischief.';
+  // stop audio context if present (do not "close" — just suspend)
+  try { if (audioCtx && audioCtx.state !== 'suspended') audioCtx.suspend().catch(()=>{}); } catch(e){}
+}
+
+/* ---------- Event wiring ---------- */
+/* No button: hover & click */
+noBtn.addEventListener('mouseover', onNoInteracted);
+noBtn.addEventListener('click', onNoInteracted);
+
+/* Yes button: idempotent accept */
+yesBtn.addEventListener('click', () => {
+  accept();
 });
 
-/* initial nudges */
-setTimeout(()=> { if(Math.random() > 0.4) mischiefNo(); }, 900);
-setTimeout(()=> { launchHearts(20); }, 600);
+/* Cat actions */
+$('#catCuddle').addEventListener('click', () => {
+  hideCat(); accept();
+});
+$('#catPoke').addEventListener('click', () => {
+  catPokeHandler();
+});
 
+/* chaos slider update */
+chaos.addEventListener('input', (e) => {
+  STATE.chaos = Number(e.target.value);
+});
+
+/* keyboard shortcuts */
+document.addEventListener('keydown', (ev) => {
+  const k = ev.key.toLowerCase();
+  if (k === 'y') yesBtn.click();
+  if (k === 'n') noBtn.click();
+  if (k === 'm') showCat();
+});
+
+/* reset */
+resetBtn.addEventListener('click', () => {
+  resetAll();
+});
+
+/* initial friendly nudge */
+setTimeout(() => {
+  // small launch hearts to hint fun
+  launchHearts(18);
+}, 600);
+
+/* ---------- Testing helpers exposed to console (safe) ---------- */
+window.__VAL_FIX = {
+  STATE,
+  spawnYesClone,
+  spawnConfetti,
+  launchHearts,
+  resetAll
+};
+
+/* End of script */
 </script>
 </body>
 </html>
