@@ -669,7 +669,7 @@ function onNoInteracted() {
   STATE.attempts++;
   // move, maybe temporary text change, maybe spawn clone, maybe spinner/cat
   moveNoButtonRandomly();
-  const level = clamp(Number(chaos.value || 7), 0, 10);
+  const level = STATE.chaos;
   if (level >= 2) boing();
   if (Math.random() < 0.22 && level >= 3) {
     // lie briefly
